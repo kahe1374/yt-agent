@@ -1,14 +1,15 @@
 import asyncio
 import json
 import os
-import re
+import time
 
 import edge_tts
 import feedparser
 import requests
+import re
 
 NEWS_URL = "https://news.google.com/rss/headlines/section/topic/TECHNOLOGY?hl=en-US&gl=US&ceid=US:en"
-MODEL = os.environ.get("MODEL", "meta-llama/llama-3.3-70b-instruct:free")
+MODEL = os.environ.get("MODEL", "openrouter/free")
 API_KEY = os.environ["OPENROUTER_API_KEY"]
 VOICE = os.environ.get("VOICE", "fa-IR-DilaraNeural")
 OUT = "output"
@@ -45,23 +46,35 @@ def get_news(limit=10):
 
 
 def write_script(news):
-    r = requests.post(
-        "https://openrouter.ai/api/v1/chat/completions",
-        headers={"Authorization": f"Bearer {API_KEY}"},
-        json={
-            "model": MODEL,
-            "messages": [
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": news},
-            ],
-        },
-        timeout=120,
-    )
-    r.raise_for_status()
-    raw = r.json()["choices"][0]["message"]["content"]
-    clean = re.sub(r"```json|```", "", raw).strip()
-    start, end = clean.find("{"), clean.rfind("}")
-    return json.loads(clean[start : end + 1])
+    for attempt in range(1, 4):
+        r = requests.post(
+            "https://openrouter.ai/api/v1/chat/completions",
+            headers={"Authorization": f"Bearer {API_KEY}"},
+            json={
+                "model": MODEL,
+                "messages": [
+                    {"role": "system", "content": SYSTEM_PROMPT},
+                    {"role": "user", "content": news},
+                ],
+            },
+            timeout=180,
+        )
+        raw = ""
+        try:
+            body = r.json()
+            raw = body["choices"][0]["message"]["content"] or ""
+            print("مدل:", body.get("model"))
+        except Exception:
+            print("پاسخ نامعتبر:", r.status_code, r.text[:300])
+        start, end = raw.find("{"), raw.rfind("}")
+        if start != -1 and end > start:
+            try:
+                return json.loads(raw[start : end + 1])
+            except json.JSONDecodeError:
+                pass
+        print(f"تلاش {attempt} ناموفق. خروجی مدل:", raw[:300])
+        time.sleep(5)
+    raise RuntimeError("مدل JSON درست نداد")
 
 
 async def make_audio(text, path):
