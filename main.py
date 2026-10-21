@@ -15,49 +15,37 @@ OPENROUTER_KEY = os.environ.get("OPENROUTER_API_KEY", "")
 MODELS = [
     m.strip()
     for m in os.environ.get(
-        "MODELS", "google/gemma-4-31b-it:free,qwen/qwen3.8-27b:free"
+        "MODELS", "google/gemma-4-26b-a4b-it:free,google/gemma-4-31b-it:free"
     ).split(",")
     if m.strip()
 ]
-VOICE = os.environ.get("VOICE", "fa-IR-DilaraNeural")
-RATE = os.environ.get("RATE", "-8%")
+VOICE = os.environ.get("VOICE", "en-US-AriaNeural")
+RATE = os.environ.get("RATE", "+0%")
 OUT = "output"
 
-SYSTEM_PROMPT = """تو نویسنده‌ی حرفه‌ای اسکریپت یه کانال یوتیوب فارسی درباره‌ی تکنولوژی هستی. کانال بدون چهره است و متن تو را یک گوینده‌ی زن با صدا می‌خواند.
+SYSTEM_PROMPT = """You are a professional script writer for a faceless English YouTube channel about technology news. Your script is read aloud by a female narrator.
 
-ورودی: لیست خبرهای امروز تکنولوژی (به انگلیسی).
+Input: a list of today's tech news headlines.
 
-کار تو:
-1. مهم‌ترین و جذاب‌ترین خبر را انتخاب کن.
-2. روایت را به فارسی معیار، روان و صمیمی بنویس، حدود ۱۵۰ تا ۲۰۰ کلمه.
-3. شروع با یک جمله‌ی قلاب‌کننده، وسط توضیح ساده، آخر یک جمع‌بندی کوتاه.
-4. فقط چیزی بنویس که در خبر هست. عدد و ادعای ساختگی نیاور. اگر اطلاعات خبر کم است، کوتاه‌تر بنویس و پرگویی نکن.
+Your job:
+1. Pick the single most interesting and important story.
+2. Write a narration of about 150 to 200 words (roughly 60 to 90 seconds).
+3. Start with a strong hook in the first sentence. Then explain the story simply. End with one short takeaway about why it matters.
+4. Use only facts that are in the headlines. Never invent numbers, quotes, dates, or claims. If the information is thin, write a shorter script and do not pad it.
 
-قواعد نوشتن برای گوش:
-- جمله‌ها کوتاه باشند (حداکثر ۱۵ کلمه). بعد از هر جمله نقطه بگذار.
-- املا و دستور زبان فارسی را درست رعایت کن. ترجمه‌ی تحت‌اللفظی و عجیب ننویس. معادل درست فارسی را بنویس (مثلاً foldable یعنی تاشو).
-- فقط از حروف فارسی استفاده کن. هیچ حرف انگلیسی، روسی یا زبان دیگری در روایت نباشد.
-- اسم شرکت‌ها و محصولات را به فارسی بنویس (مثلاً اپل، گوگل، مایکروسافت، آیفون).
-- عددها را با حروف بنویس (مثلاً «سی درصد»، «دو میلیارد دلار»).
-- از ایموجی، پرانتز، نقل‌قول، علامت‌های خاص و فهرست استفاده نکن.
-- محاوره‌ی افراطی و کلمات عامیانه‌ی نادرست نیاور.
+Writing rules for the ear:
+- Short, clear sentences, conversational but correct English.
+- No emojis, no parentheses, no bullet points, no hashtags, no special symbols, no stage directions.
+- Write numbers and names the way a person would say them.
 
-خروجی فقط یک JSON معتبر باشد، بدون هیچ متن اضافه و بدون ```:
+Output only one valid JSON object, with no extra text and no code fences:
 {
-  "title": "عنوان جذاب فارسی، حداکثر ۷۰ کاراکتر",
-  "description": "توضیحات یوتیوب، ۲ تا ۳ خط، با نام منبع خبر",
-  "narration": "متن کامل روایت برای تبدیل به صدا",
-  "keywords": ["۳ تا ۵ کلمه‌ی کلیدی انگلیسی برای جستجوی تصویر"],
-  "tags": ["۵ تا ۸ تگ فارسی و انگلیسی"]
+  "title": "Catchy but honest title, max 70 characters",
+  "description": "2 to 3 lines for the YouTube description, including the news source name",
+  "narration": "The full narration text to be converted to speech",
+  "keywords": ["3 to 5 English keywords for finding background footage"],
+  "tags": ["5 to 8 English tags"]
 }"""
-
-EDITOR_PROMPT = """تو ویراستار فارسی هستی. متن زیر برای خوانده شدن با صدای گوینده نوشته شده.
-- غلط‌های املایی و دستوری را درست کن.
-- جمله‌های نامفهوم یا ترجمه‌ی تحت‌اللفظی را روان و طبیعی کن.
-- جمله‌ها کوتاه بمانند. معنی و اطلاعات را تغییر نده و چیزی اضافه نکن.
-- فقط از حروف فارسی استفاده کن. عددها را با حروف بنویس.
-- هیچ ایموجی، پرانتز یا علامت خاصی نگذار.
-فقط متن اصلاح‌شده را برگردان، بدون هیچ توضیح اضافه و بدون عذرخواهی."""
 
 
 def get_news(limit=10):
@@ -67,7 +55,7 @@ def get_news(limit=10):
         summary = re.sub(r"<[^>]+>", " ", e.get("summary", ""))
         items.append(f"- {e.title} ({e.get('source', {}).get('title', '')}) {summary[:200]}")
     if not items:
-        raise RuntimeError("خبری از RSS نیومد")
+        raise RuntimeError("No news came from the RSS feed")
     return "\n".join(items)
 
 
@@ -92,7 +80,7 @@ def call_llm(system, user, json_mode=False):
                     timeout=180,
                 )
                 raw = r.json()["candidates"][0]["content"]["parts"][0]["text"]
-                print("مدل:", GEMINI_MODEL)
+                print("model:", GEMINI_MODEL)
             else:
                 model = MODELS[(attempt - 1) % len(MODELS)]
                 r = requests.post(
@@ -104,78 +92,3 @@ def call_llm(system, user, json_mode=False):
                         "messages": [
                             {"role": "system", "content": system},
                             {"role": "user", "content": user},
-                        ],
-                    },
-                    timeout=180,
-                )
-                body = r.json()
-                raw = body["choices"][0]["message"]["content"] or ""
-                print("مدل:", body.get("model", model))
-        except Exception as e:
-            print(f"تلاش {attempt} خطا:", e, (r.text[:200] if r is not None else ""))
-        if raw.strip():
-            return raw
-        time.sleep(15)
-    raise RuntimeError("مدل جواب نداد")
-
-
-def narration_ok(text):
-    if len(text) < 200:
-        return False
-    return not re.search(r"[^\u0600-\u06FF\u200c\s0-9.,!?:;\-«»()\"'…]", text)
-
-
-def write_script(news):
-    for attempt in range(1, 5):
-        raw = call_llm(SYSTEM_PROMPT, news, json_mode=True)
-        start, end = raw.find("{"), raw.rfind("}")
-        if start != -1 and end > start:
-            try:
-                data = json.loads(raw[start : end + 1])
-                if narration_ok(data.get("narration", "")):
-                    return data
-                print(f"تلاش {attempt}: متن روایت قابل قبول نبود (کوتاه یا دارای حروف غیرفارسی).")
-            except json.JSONDecodeError:
-                print(f"تلاش {attempt}: JSON نامعتبر.")
-        else:
-            print(f"تلاش {attempt}: JSON پیدا نشد:", raw[:200])
-        time.sleep(5)
-    raise RuntimeError("مدل متن قابل قبول نداد")
-
-
-def proofread(text):
-    try:
-        out = call_llm(EDITOR_PROMPT, text).strip()
-    except Exception as e:
-        print("ویراستاری انجام نشد:", e)
-        return text
-    if 0.7 * len(text) <= len(out) <= 1.3 * len(text) and narration_ok(out):
-        return out
-    print("خروجی ویراستار رد شد، متن اصلی استفاده می‌شود.")
-    return text
-
-
-def clean_for_tts(text):
-    text = re.sub(r"[*#_`>\[\]()\"«»]", " ", text)
-    text = re.sub(r"\s+", " ", text)
-    return text.strip()
-
-
-async def make_audio(text, path):
-    await edge_tts.Communicate(text, VOICE, rate=RATE).save(path)
-
-
-def main():
-    os.makedirs(OUT, exist_ok=True)
-    news = get_news()
-    data = write_script(news)
-    data["narration"] = clean_for_tts(proofread(data["narration"]))
-    with open(f"{OUT}/script.json", "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
-    asyncio.run(make_audio(data["narration"], f"{OUT}/narration.mp3"))
-    print("عنوان:", data["title"])
-    print("تمام شد: output/script.json و output/narration.mp3")
-
-
-if __name__ == "__main__":
-    main()
