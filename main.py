@@ -12,7 +12,13 @@ NEWS_URL = "https://news.google.com/rss/headlines/section/topic/TECHNOLOGY?hl=en
 GEMINI_KEY = os.environ.get("GEMINI_API_KEY", "")
 GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.8-flash")
 OPENROUTER_KEY = os.environ.get("OPENROUTER_API_KEY", "")
-MODEL = os.environ.get("MODEL", "openrouter/free")
+MODELS = [
+    m.strip()
+    for m in os.environ.get(
+        "MODELS", "google/gemma-4-31b-it:free,qwen/qwen3.8-27b:free"
+    ).split(",")
+    if m.strip()
+]
 VOICE = os.environ.get("VOICE", "fa-IR-DilaraNeural")
 RATE = os.environ.get("RATE", "-8%")
 OUT = "output"
@@ -25,12 +31,13 @@ SYSTEM_PROMPT = """تو نویسنده‌ی حرفه‌ای اسکریپت یه 
 1. مهم‌ترین و جذاب‌ترین خبر را انتخاب کن.
 2. روایت را به فارسی معیار، روان و صمیمی بنویس، حدود ۱۵۰ تا ۲۰۰ کلمه.
 3. شروع با یک جمله‌ی قلاب‌کننده، وسط توضیح ساده، آخر یک جمع‌بندی کوتاه.
-4. فقط چیزی بنویس که در خبر هست. عدد و ادعای ساختگی نیاور.
+4. فقط چیزی بنویس که در خبر هست. عدد و ادعای ساختگی نیاور. اگر اطلاعات خبر کم است، کوتاه‌تر بنویس و پرگویی نکن.
 
 قواعد نوشتن برای گوش:
 - جمله‌ها کوتاه باشند (حداکثر ۱۵ کلمه). بعد از هر جمله نقطه بگذار.
 - املا و دستور زبان فارسی را درست رعایت کن. ترجمه‌ی تحت‌اللفظی و عجیب ننویس. معادل درست فارسی را بنویس (مثلاً foldable یعنی تاشو).
-- اسم شرکت‌ها و محصولات را به فارسی بنویس (مثلاً اپل، گوگل، مایکروسافت، آیفون). از حروف انگلیسی در روایت استفاده نکن.
+- فقط از حروف فارسی استفاده کن. هیچ حرف انگلیسی، روسی یا زبان دیگری در روایت نباشد.
+- اسم شرکت‌ها و محصولات را به فارسی بنویس (مثلاً اپل، گوگل، مایکروسافت، آیفون).
 - عددها را با حروف بنویس (مثلاً «سی درصد»، «دو میلیارد دلار»).
 - از ایموجی، پرانتز، نقل‌قول، علامت‌های خاص و فهرست استفاده نکن.
 - محاوره‌ی افراطی و کلمات عامیانه‌ی نادرست نیاور.
@@ -47,8 +54,8 @@ SYSTEM_PROMPT = """تو نویسنده‌ی حرفه‌ای اسکریپت یه 
 EDITOR_PROMPT = """تو ویراستار فارسی هستی. متن زیر برای خوانده شدن با صدای گوینده نوشته شده.
 - غلط‌های املایی و دستوری را درست کن.
 - جمله‌های نامفهوم یا ترجمه‌ی تحت‌اللفظی را روان و طبیعی کن.
-- جمله‌ها کوتاه بمانند. معنی و اطلاعات را تغییر نده.
-- هر حرف انگلیسی را به فارسی بنویس و عددها را با حروف بنویس.
+- جمله‌ها کوتاه بمانند. معنی و اطلاعات را تغییر نده و چیزی اضافه نکن.
+- فقط از حروف فارسی استفاده کن. عددها را با حروف بنویس.
 - هیچ ایموجی، پرانتز یا علامت خاصی نگذار.
 فقط متن اصلاح‌شده را برگردان، بدون هیچ توضیح اضافه و بدون عذرخواهی."""
 
@@ -65,7 +72,8 @@ def get_news(limit=10):
 
 
 def call_llm(system, user, json_mode=False):
-    for attempt in range(1, 4):
+    attempts = 4 if GEMINI_KEY else 6
+    for attempt in range(1, attempts + 1):
         raw = ""
         r = None
         try:
@@ -86,11 +94,12 @@ def call_llm(system, user, json_mode=False):
                 raw = r.json()["candidates"][0]["content"]["parts"][0]["text"]
                 print("مدل:", GEMINI_MODEL)
             else:
+                model = MODELS[(attempt - 1) % len(MODELS)]
                 r = requests.post(
                     "https://openrouter.ai/api/v1/chat/completions",
                     headers={"Authorization": f"Bearer {OPENROUTER_KEY}"},
                     json={
-                        "model": MODEL,
+                        "model": model,
                         "max_tokens": 1500,
                         "messages": [
                             {"role": "system", "content": system},
@@ -101,17 +110,19 @@ def call_llm(system, user, json_mode=False):
                 )
                 body = r.json()
                 raw = body["choices"][0]["message"]["content"] or ""
-                print("مدل:", body.get("model"))
+                print("مدل:", body.get("model", model))
         except Exception as e:
-            print("خطا:", e, (r.text[:300] if r is not None else ""))
+            print(f"تلاش {attempt} خطا:", e, (r.text[:200] if r is not None else ""))
         if raw.strip():
             return raw
-        time.sleep(5)
+        time.sleep(15)
     raise RuntimeError("مدل جواب نداد")
 
 
 def narration_ok(text):
-    return len(text) > 200 and not re.search(r"[A-Za-z]", text)
+    if len(text) < 200:
+        return False
+    return not re.search(r"[^\u0600-\u06FF\u200c\s0-9.,!?:;\-«»()\"'…]", text)
 
 
 def write_script(news):
@@ -123,7 +134,7 @@ def write_script(news):
                 data = json.loads(raw[start : end + 1])
                 if narration_ok(data.get("narration", "")):
                     return data
-                print(f"تلاش {attempt}: متن روایت قابل قبول نبود (کوتاه یا انگلیسی).")
+                print(f"تلاش {attempt}: متن روایت قابل قبول نبود (کوتاه یا دارای حروف غیرفارسی).")
             except json.JSONDecodeError:
                 print(f"تلاش {attempt}: JSON نامعتبر.")
         else:
