@@ -9,8 +9,10 @@ import feedparser
 import requests
 
 NEWS_URL = "https://news.google.com/rss/headlines/section/topic/TECHNOLOGY?hl=en-US&gl=US&ceid=US:en"
+GEMINI_KEY = os.environ.get("GEMINI_API_KEY", "")
+GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.8-flash")
+OPENROUTER_KEY = os.environ.get("OPENROUTER_API_KEY", "")
 MODEL = os.environ.get("MODEL", "openrouter/free")
-API_KEY = os.environ["OPENROUTER_API_KEY"]
 VOICE = os.environ.get("VOICE", "fa-IR-DilaraNeural")
 RATE = os.environ.get("RATE", "-8%")
 OUT = "output"
@@ -27,8 +29,8 @@ SYSTEM_PROMPT = """تو نویسنده‌ی حرفه‌ای اسکریپت یه 
 
 قواعد نوشتن برای گوش:
 - جمله‌ها کوتاه باشند (حداکثر ۱۵ کلمه). بعد از هر جمله نقطه بگذار.
-- املا و دستور زبان فارسی را درست رعایت کن. جمله‌ی ترجمه‌ی تحت‌اللفظی و عجیب ننویس.
-- اسم شرکت‌ها و محصولات را به فارسی بنویس (مثلاً اپل، گوگل، مایکروسافت، آیفون). از حروف انگلیسی استفاده نکن.
+- املا و دستور زبان فارسی را درست رعایت کن. ترجمه‌ی تحت‌اللفظی و عجیب ننویس. معادل درست فارسی را بنویس (مثلاً foldable یعنی تاشو).
+- اسم شرکت‌ها و محصولات را به فارسی بنویس (مثلاً اپل، گوگل، مایکروسافت، آیفون). از حروف انگلیسی در روایت استفاده نکن.
 - عددها را با حروف بنویس (مثلاً «سی درصد»، «دو میلیارد دلار»).
 - از ایموجی، پرانتز، نقل‌قول، علامت‌های خاص و فهرست استفاده نکن.
 - محاوره‌ی افراطی و کلمات عامیانه‌ی نادرست نیاور.
@@ -48,7 +50,7 @@ EDITOR_PROMPT = """تو ویراستار فارسی هستی. متن زیر بر
 - جمله‌ها کوتاه بمانند. معنی و اطلاعات را تغییر نده.
 - هر حرف انگلیسی را به فارسی بنویس و عددها را با حروف بنویس.
 - هیچ ایموجی، پرانتز یا علامت خاصی نگذار.
-فقط متن اصلاح‌شده را برگردان، بدون هیچ توضیح اضافه."""
+فقط متن اصلاح‌شده را برگردان، بدون هیچ توضیح اضافه و بدون عذرخواهی."""
 
 
 def get_news(limit=10):
@@ -62,58 +64,84 @@ def get_news(limit=10):
     return "\n".join(items)
 
 
-def call_llm(messages):
+def call_llm(system, user, json_mode=False):
     for attempt in range(1, 4):
-        r = requests.post(
-            "https://openrouter.ai/api/v1/chat/completions",
-            headers={"Authorization": f"Bearer {API_KEY}"},
-            json={"model": MODEL, "messages": messages},
-            timeout=180,
-        )
         raw = ""
+        r = None
         try:
-            body = r.json()
-            raw = body["choices"][0]["message"]["content"] or ""
-            print("مدل:", body.get("model"))
-        except Exception:
-            print("پاسخ نامعتبر:", r.status_code, r.text[:300])
+            if GEMINI_KEY:
+                body = {
+                    "systemInstruction": {"parts": [{"text": system}]},
+                    "contents": [{"role": "user", "parts": [{"text": user}]}],
+                    "generationConfig": {"temperature": 0.7},
+                }
+                if json_mode:
+                    body["generationConfig"]["responseMimeType"] = "application/json"
+                r = requests.post(
+                    f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent",
+                    headers={"x-goog-api-key": GEMINI_KEY},
+                    json=body,
+                    timeout=180,
+                )
+                raw = r.json()["candidates"][0]["content"]["parts"][0]["text"]
+                print("مدل:", GEMINI_MODEL)
+            else:
+                r = requests.post(
+                    "https://openrouter.ai/api/v1/chat/completions",
+                    headers={"Authorization": f"Bearer {OPENROUTER_KEY}"},
+                    json={
+                        "model": MODEL,
+                        "max_tokens": 1500,
+                        "messages": [
+                            {"role": "system", "content": system},
+                            {"role": "user", "content": user},
+                        ],
+                    },
+                    timeout=180,
+                )
+                body = r.json()
+                raw = body["choices"][0]["message"]["content"] or ""
+                print("مدل:", body.get("model"))
+        except Exception as e:
+            print("خطا:", e, (r.text[:300] if r is not None else ""))
         if raw.strip():
             return raw
         time.sleep(5)
     raise RuntimeError("مدل جواب نداد")
 
 
+def narration_ok(text):
+    return len(text) > 200 and not re.search(r"[A-Za-z]", text)
+
+
 def write_script(news):
-    for attempt in range(1, 4):
-        raw = call_llm(
-            [
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": news},
-            ]
-        )
+    for attempt in range(1, 5):
+        raw = call_llm(SYSTEM_PROMPT, news, json_mode=True)
         start, end = raw.find("{"), raw.rfind("}")
         if start != -1 and end > start:
             try:
-                return json.loads(raw[start : end + 1])
+                data = json.loads(raw[start : end + 1])
+                if narration_ok(data.get("narration", "")):
+                    return data
+                print(f"تلاش {attempt}: متن روایت قابل قبول نبود (کوتاه یا انگلیسی).")
             except json.JSONDecodeError:
-                pass
-        print(f"تلاش {attempt} ناموفق. خروجی مدل:", raw[:300])
+                print(f"تلاش {attempt}: JSON نامعتبر.")
+        else:
+            print(f"تلاش {attempt}: JSON پیدا نشد:", raw[:200])
         time.sleep(5)
-    raise RuntimeError("مدل JSON درست نداد")
+    raise RuntimeError("مدل متن قابل قبول نداد")
 
 
 def proofread(text):
     try:
-        out = call_llm(
-            [
-                {"role": "system", "content": EDITOR_PROMPT},
-                {"role": "user", "content": text},
-            ]
-        ).strip()
-        return out if len(out) > 50 else text
+        out = call_llm(EDITOR_PROMPT, text).strip()
     except Exception as e:
         print("ویراستاری انجام نشد:", e)
         return text
+    if 0.7 * len(text) <= len(out) <= 1.3 * len(text) and narration_ok(out):
+        return out
+    print("خروجی ویراستار رد شد، متن اصلی استفاده می‌شود.")
+    return text
 
 
 def clean_for_tts(text):
