@@ -9,9 +9,7 @@ import feedparser
 import requests
 
 NEWS_URL = "https://news.google.com/rss/headlines/section/topic/TECHNOLOGY?hl=en-US&gl=US&ceid=US:en"
-GEMINI_KEY = os.environ.get("GEMINI_API_KEY", "")
-GEMINI_MODEL = os.environ.get("GEMINI_MODEL", "gemini-3.8-flash")
-OPENROUTER_KEY = os.environ.get("OPENROUTER_API_KEY", "")
+API_KEY = os.environ["OPENROUTER_API_KEY"]
 MODELS = [
     m.strip()
     for m in os.environ.get(
@@ -59,36 +57,81 @@ def get_news(limit=10):
     return "\n".join(items)
 
 
-def call_llm(system, user, json_mode=False):
-    attempts = 4 if GEMINI_KEY else 6
-    for attempt in range(1, attempts + 1):
+def call_llm(system, user):
+    for attempt in range(1, 7):
+        model = MODELS[(attempt - 1) % len(MODELS)]
         raw = ""
         r = None
         try:
-            if GEMINI_KEY:
-                body = {
-                    "systemInstruction": {"parts": [{"text": system}]},
-                    "contents": [{"role": "user", "parts": [{"text": user}]}],
-                    "generationConfig": {"temperature": 0.7},
-                }
-                if json_mode:
-                    body["generationConfig"]["responseMimeType"] = "application/json"
-                r = requests.post(
-                    f"https://generativelanguage.googleapis.com/v1beta/models/{GEMINI_MODEL}:generateContent",
-                    headers={"x-goog-api-key": GEMINI_KEY},
-                    json=body,
-                    timeout=180,
-                )
-                raw = r.json()["candidates"][0]["content"]["parts"][0]["text"]
-                print("model:", GEMINI_MODEL)
-            else:
-                model = MODELS[(attempt - 1) % len(MODELS)]
-                r = requests.post(
-                    "https://openrouter.ai/api/v1/chat/completions",
-                    headers={"Authorization": f"Bearer {OPENROUTER_KEY}"},
-                    json={
-                        "model": model,
-                        "max_tokens": 1500,
-                        "messages": [
-                            {"role": "system", "content": system},
-                            {"role": "user", "content": user},
+            r = requests.post(
+                "https://openrouter.ai/api/v1/chat/completions",
+                headers={"Authorization": f"Bearer {API_KEY}"},
+                json={
+                    "model": model,
+                    "max_tokens": 1500,
+                    "messages": [
+                        {"role": "system", "content": system},
+                        {"role": "user", "content": user},
+                    ],
+                },
+                timeout=180,
+            )
+            body = r.json()
+            raw = body["choices"][0]["message"]["content"] or ""
+            print("model:", body.get("model", model))
+        except Exception as e:
+            print(f"attempt {attempt} error:", e, (r.text[:200] if r is not None else ""))
+        if raw.strip():
+            return raw
+        time.sleep(15)
+    raise RuntimeError("The model did not respond")
+
+
+def narration_ok(text):
+    if len(text) < 400:
+        return False
+    return not re.search(r"[^\x00-\x7F\u2018\u2019\u201C\u201D\u2013\u2014\u2026]", text)
+
+
+def write_script(news):
+    for attempt in range(1, 5):
+        raw = call_llm(SYSTEM_PROMPT, news)
+        start, end = raw.find("{"), raw.rfind("}")
+        if start != -1 and end > start:
+            try:
+                data = json.loads(raw[start : end + 1])
+                if narration_ok(data.get("narration", "")):
+                    return data
+                print(f"attempt {attempt}: narration rejected.")
+            except json.JSONDecodeError:
+                print(f"attempt {attempt}: invalid JSON.")
+        else:
+            print(f"attempt {attempt}: no JSON found:", raw[:200])
+        time.sleep(5)
+    raise RuntimeError("The model did not produce an acceptable script")
+
+
+def clean_for_tts(text):
+    text = re.sub(r"[*#_`>\[\]()\"]", " ", text)
+    text = re.sub(r"\s+", " ", text)
+    return text.strip()
+
+
+async def make_audio(text, path):
+    await edge_tts.Communicate(text, VOICE, rate=RATE).save(path)
+
+
+def main():
+    os.makedirs(OUT, exist_ok=True)
+    news = get_news()
+    data = write_script(news)
+    data["narration"] = clean_for_tts(data["narration"])
+    with open(f"{OUT}/script.json", "w", encoding="utf-8") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+    asyncio.run(make_audio(data["narration"], f"{OUT}/narration.mp3"))
+    print("title:", data["title"])
+    print("done: output/script.json and output/narration.mp3")
+
+
+if __name__ == "__main__":
+    main()
