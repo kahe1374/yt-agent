@@ -1,37 +1,54 @@
 import asyncio
 import json
 import os
+import re
 import time
 
 import edge_tts
 import feedparser
 import requests
-import re
 
 NEWS_URL = "https://news.google.com/rss/headlines/section/topic/TECHNOLOGY?hl=en-US&gl=US&ceid=US:en"
 MODEL = os.environ.get("MODEL", "openrouter/free")
 API_KEY = os.environ["OPENROUTER_API_KEY"]
 VOICE = os.environ.get("VOICE", "fa-IR-DilaraNeural")
+RATE = os.environ.get("RATE", "-8%")
 OUT = "output"
 
-SYSTEM_PROMPT = """تو نویسنده‌ی اسکریپت یه کانال یوتیوب فارسی درباره‌ی تکنولوژی هستی. کانال بدون چهره است و ویدیوها با صدای گوینده ساخته می‌شن.
+SYSTEM_PROMPT = """تو نویسنده‌ی حرفه‌ای اسکریپت یه کانال یوتیوب فارسی درباره‌ی تکنولوژی هستی. کانال بدون چهره است و متن تو را یک گوینده‌ی زن با صدا می‌خواند.
 
-ورودی: لیست خبرهای امروز تکنولوژی.
+ورودی: لیست خبرهای امروز تکنولوژی (به انگلیسی).
 
 کار تو:
-1. مهم‌ترین و جذاب‌ترین خبر رو انتخاب کن.
-2. یه اسکریپت روایت فارسی روان و محاوره‌ای بنویس، حدود ۱۵۰ تا ۲۰۰ کلمه (نزدیک ۶۰ تا ۹۰ ثانیه).
-3. شروع با یه جمله‌ی قلاب‌کننده در ۳ ثانیه اول، وسط توضیح ساده، آخر یه جمع‌بندی کوتاه.
-4. فقط چیزی بنویس که تو خبر هست. چیزی از خودت اضافه نکن و عدد یا ادعای ساختگی نیار.
+1. مهم‌ترین و جذاب‌ترین خبر را انتخاب کن.
+2. روایت را به فارسی معیار، روان و صمیمی بنویس، حدود ۱۵۰ تا ۲۰۰ کلمه.
+3. شروع با یک جمله‌ی قلاب‌کننده، وسط توضیح ساده، آخر یک جمع‌بندی کوتاه.
+4. فقط چیزی بنویس که در خبر هست. عدد و ادعای ساختگی نیاور.
 
-خروجی فقط یک JSON معتبر باشه، بدون هیچ متن اضافه و بدون ```:
+قواعد نوشتن برای گوش:
+- جمله‌ها کوتاه باشند (حداکثر ۱۵ کلمه). بعد از هر جمله نقطه بگذار.
+- املا و دستور زبان فارسی را درست رعایت کن. جمله‌ی ترجمه‌ی تحت‌اللفظی و عجیب ننویس.
+- اسم شرکت‌ها و محصولات را به فارسی بنویس (مثلاً اپل، گوگل، مایکروسافت، آیفون). از حروف انگلیسی استفاده نکن.
+- عددها را با حروف بنویس (مثلاً «سی درصد»، «دو میلیارد دلار»).
+- از ایموجی، پرانتز، نقل‌قول، علامت‌های خاص و فهرست استفاده نکن.
+- محاوره‌ی افراطی و کلمات عامیانه‌ی نادرست نیاور.
+
+خروجی فقط یک JSON معتبر باشد، بدون هیچ متن اضافه و بدون ```:
 {
   "title": "عنوان جذاب فارسی، حداکثر ۷۰ کاراکتر",
-  "description": "توضیحات یوتیوب، ۲ تا ۳ خط، با منبع خبر",
+  "description": "توضیحات یوتیوب، ۲ تا ۳ خط، با نام منبع خبر",
   "narration": "متن کامل روایت برای تبدیل به صدا",
   "keywords": ["۳ تا ۵ کلمه‌ی کلیدی انگلیسی برای جستجوی تصویر"],
   "tags": ["۵ تا ۸ تگ فارسی و انگلیسی"]
 }"""
+
+EDITOR_PROMPT = """تو ویراستار فارسی هستی. متن زیر برای خوانده شدن با صدای گوینده نوشته شده.
+- غلط‌های املایی و دستوری را درست کن.
+- جمله‌های نامفهوم یا ترجمه‌ی تحت‌اللفظی را روان و طبیعی کن.
+- جمله‌ها کوتاه بمانند. معنی و اطلاعات را تغییر نده.
+- هر حرف انگلیسی را به فارسی بنویس و عددها را با حروف بنویس.
+- هیچ ایموجی، پرانتز یا علامت خاصی نگذار.
+فقط متن اصلاح‌شده را برگردان، بدون هیچ توضیح اضافه."""
 
 
 def get_news(limit=10):
@@ -45,18 +62,12 @@ def get_news(limit=10):
     return "\n".join(items)
 
 
-def write_script(news):
+def call_llm(messages):
     for attempt in range(1, 4):
         r = requests.post(
             "https://openrouter.ai/api/v1/chat/completions",
             headers={"Authorization": f"Bearer {API_KEY}"},
-            json={
-                "model": MODEL,
-                "messages": [
-                    {"role": "system", "content": SYSTEM_PROMPT},
-                    {"role": "user", "content": news},
-                ],
-            },
+            json={"model": MODEL, "messages": messages},
             timeout=180,
         )
         raw = ""
@@ -66,6 +77,20 @@ def write_script(news):
             print("مدل:", body.get("model"))
         except Exception:
             print("پاسخ نامعتبر:", r.status_code, r.text[:300])
+        if raw.strip():
+            return raw
+        time.sleep(5)
+    raise RuntimeError("مدل جواب نداد")
+
+
+def write_script(news):
+    for attempt in range(1, 4):
+        raw = call_llm(
+            [
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": news},
+            ]
+        )
         start, end = raw.find("{"), raw.rfind("}")
         if start != -1 and end > start:
             try:
@@ -77,14 +102,35 @@ def write_script(news):
     raise RuntimeError("مدل JSON درست نداد")
 
 
+def proofread(text):
+    try:
+        out = call_llm(
+            [
+                {"role": "system", "content": EDITOR_PROMPT},
+                {"role": "user", "content": text},
+            ]
+        ).strip()
+        return out if len(out) > 50 else text
+    except Exception as e:
+        print("ویراستاری انجام نشد:", e)
+        return text
+
+
+def clean_for_tts(text):
+    text = re.sub(r"[*#_`>\[\]()\"«»]", " ", text)
+    text = re.sub(r"\s+", " ", text)
+    return text.strip()
+
+
 async def make_audio(text, path):
-    await edge_tts.Communicate(text, VOICE).save(path)
+    await edge_tts.Communicate(text, VOICE, rate=RATE).save(path)
 
 
 def main():
     os.makedirs(OUT, exist_ok=True)
     news = get_news()
     data = write_script(news)
+    data["narration"] = clean_for_tts(proofread(data["narration"]))
     with open(f"{OUT}/script.json", "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
     asyncio.run(make_audio(data["narration"], f"{OUT}/narration.mp3"))
