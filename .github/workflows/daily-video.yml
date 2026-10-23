@@ -18,6 +18,7 @@ jobs:
         env:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
           MODELS: nvidia/nemotron-3-super-120b-a12b:free,openrouter/free,thinkingmachines/inkling:free,nvidia/nemotron-3-ultra-550b-a55b:free,google/gemma-4-26b-a4b-it:free,openrouter/free
+      - run: python video.py
       - uses: actions/upload-artifact@v4
         with:
           name: output
