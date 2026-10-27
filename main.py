@@ -27,7 +27,7 @@ Input: a list of today's tech news headlines.
 
 Your job:
 1. Pick the single most interesting and important story.
-2. Write a narration of about 150 to 200 words (roughly 60 to 90 seconds).
+2. Write a narration of about 280 to 350 words (roughly 100 to 140 seconds).
 3. Start with a strong hook in the first sentence. Then explain the story simply. End with one short takeaway about why it matters.
 4. Use only facts that are in the headlines. Never invent numbers, quotes, dates, or claims. If the information is thin, write a shorter script and do not pad it.
 
