@@ -1,4 +1,5 @@
 import asyncio
+import datetime
 import json
 import os
 import re
@@ -9,112 +10,163 @@ import feedparser
 import requests
 
 NEWS_URL = "https://news.google.com/rss/headlines/section/topic/TECHNOLOGY?hl=en-US&gl=US&ceid=US:en"
+MODELS = [m.strip() for m in os.environ.get(
+    "MODELS", "google/gemma-4-26b-a4b-it:free,google/gemma-4-31b-it:free,openrouter/free"
+).split(",") if m.strip()]
 API_KEY = os.environ["OPENROUTER_API_KEY"]
-MODELS = [
-    m.strip()
-    for m in os.environ.get(
-        "MODELS", "google/gemma-4-26b-a4b-it:free,google/gemma-4-31b-it:free"
-    ).split(",")
-    if m.strip()
-]
 VOICE = os.environ.get("VOICE", "en-US-AriaNeural")
 RATE = os.environ.get("RATE", "+0%")
 OUT = "output"
+SCENE_TYPES = {"hook", "stat", "cards", "statement", "cta"}
 
-SYSTEM_PROMPT = """You are a professional script writer for a faceless English YouTube channel about technology news. Your script is read aloud by a female narrator.
+SYSTEM_PROMPT = """You write short vertical videos for a faceless English YouTube channel about technology news.
+You get a numbered list of today's tech headlines (with short snippets). One story is marked FOCUS. Make the video about the FOCUS story only. Other headlines may be used only as background if they are clearly about the same story.
 
-Input: a list of today's tech news headlines.
+STRICT RULES
+- Use ONLY facts that appear in the provided headlines and snippets. Never add analysis, predictions, causes, numbers, dates, prices or quotes that are not in the text.
+- Attribute claims to the source when you can ("according to The Verge", "Ars Technica reports").
+- If the text is thin, keep the video shorter and stay vague rather than inventing details.
+- Plain ASCII English only. No emojis, no markdown, no hashtags.
 
-Your job:
-1. Pick the single most interesting and important story.
-2. Write a narration of about 280 to 350 words (roughly 100 to 140 seconds).
-3. Start with a strong hook in the first sentence. Then explain the story simply. End with one short takeaway about why it matters.
-4. Use only facts that are in the headlines. Never invent numbers, quotes, dates, or claims. If the information is thin, write a shorter script and do not pad it.
-
-Writing rules for the ear:
-- Short, clear sentences, conversational but correct English.
-- No emojis, no parentheses, no bullet points, no hashtags, no special symbols, no stage directions.
-- Write numbers and names the way a person would say them.
-
-Output only one valid JSON object, with no extra text and no code fences:
+OUTPUT: one valid JSON object, nothing else, no code fences:
 {
-  "title": "Catchy but honest title, max 70 characters",
-  "description": "2 to 3 lines for the YouTube description, including the news source name",
-  "narration": "The full narration text to be converted to speech",
-  "keywords": ["3 to 5 English keywords for finding background footage"],
-  "tags": ["5 to 8 English tags"]
-}"""
+  "title": "catchy YouTube title, max 70 characters",
+  "description": "2-3 short lines for the YouTube description, mention the source",
+  "keywords": ["3 to 5 short topic words"],
+  "tags": ["5 to 8 tags"],
+  "scenes": [
+    {"type":"hook","headline":"3-6 word punchy headline","accent":"one word taken from the headline","voice":"the spoken sentence(s)"},
+    {"type":"stat","value":"a number from the text, e.g. $2,000 or 12 million","label":"max 8 words saying what the number is","voice":"spoken sentence(s)"},
+    {"type":"cards","heading":"max 5 words","items":["fact 1 (max 9 words)","fact 2","fact 3"],"voice":"spoken sentence(s)"},
+    {"type":"statement","headline":"5-9 word takeaway","accent":"one word from the headline","voice":"spoken sentence(s)"},
+    {"type":"cta","headline":"Follow for daily tech news","voice":"one short outro sentence, max 12 words"}
+  ]
+}
+
+SCENE PLAN
+- 6 to 8 scenes. First scene is type hook, last scene is type cta.
+- Use a stat scene ONLY if the source text contains a real number or amount. Otherwise do not use stat.
+- Use at most one cards scene, with exactly 3 items, all facts from the text.
+- Fill the rest with statement scenes.
+- The "voice" of all scenes together is the full narration: 130 to 180 words, conversational, strong hook in the first sentence, simple words, short sentences.
+- The on-screen text (headline/label/items) must match what the voice says in that scene."""
 
 
-def get_news(limit=10):
+def get_news(limit=8):
     feed = feedparser.parse(NEWS_URL)
     items = []
     for e in feed.entries[:limit]:
         summary = re.sub(r"<[^>]+>", " ", e.get("summary", ""))
-        items.append(f"- {e.title} ({e.get('source', {}).get('title', '')}) {summary[:200]}")
+        summary = re.sub(r"\s+", " ", summary).strip()
+        items.append((e.title, e.get("source", {}).get("title", ""), summary[:220]))
     if not items:
-        raise RuntimeError("No news came from the RSS feed")
-    return "\n".join(items)
+        raise RuntimeError("no news from RSS")
+    return items
 
 
-def call_llm(system, user):
-    for attempt in range(1, 7):
-        model = MODELS[(attempt - 1) % len(MODELS)]
-        raw = ""
-        r = None
+def news_prompt(items):
+    n = min(6, len(items))
+    focus = datetime.date.today().toordinal() % n
+    lines = []
+    for i, (title, src, summ) in enumerate(items):
+        tag = "  <== FOCUS" if i == focus else ""
+        lines.append(f"{i + 1}. {title} ({src}) {summ}{tag}")
+    return "\n".join(lines), items[focus][0]
+
+
+def normalize(text):
+    rep = {"’": "'", "‘": "'", "“": '"', "”": '"', "–": "-", "—": "-",
+           "…": "...", " ": " ", "•": "-"}
+    for a, b in rep.items():
+        text = text.replace(a, b)
+    return re.sub(r"\s+", " ", text).strip()
+
+
+def is_ascii(s):
+    return all(ord(c) < 128 for c in s)
+
+
+def digits_in(s):
+    return re.sub(r"\D", "", s)
+
+
+def validate(data, source_text):
+    scenes = data.get("scenes")
+    if not isinstance(scenes, list) or not (5 <= len(scenes) <= 9):
+        raise ValueError("bad scenes count")
+    clean = []
+    for s in scenes:
+        if not isinstance(s, dict) or s.get("type") not in SCENE_TYPES:
+            raise ValueError("bad scene type")
+        s = {k: (normalize(v) if isinstance(v, str) else v) for k, v in s.items()}
+        if isinstance(s.get("items"), list):
+            s["items"] = [normalize(str(x)) for x in s["items"]][:3]
+        if not s.get("voice"):
+            raise ValueError("scene without voice")
+        for key in ("voice", "headline", "heading", "label", "value", "accent"):
+            if key in s and isinstance(s[key], str) and not is_ascii(s[key]):
+                raise ValueError("non-ascii text")
+        # anti-hallucination: a stat number must exist in the source text
+        if s["type"] == "stat":
+            d = digits_in(s.get("value", ""))
+            if not d or d not in digits_in(source_text):
+                s = {"type": "statement", "headline": s.get("label", "")[:60] or s["voice"][:60],
+                     "voice": s["voice"]}
+        if s["type"] == "cards" and len(s.get("items", [])) < 2:
+            s = {"type": "statement", "headline": s.get("heading", "")[:60] or s["voice"][:60],
+                 "voice": s["voice"]}
+        if s.get("accent") and s.get("headline"):
+            wl = [re.sub(r"\W", "", w).lower() for w in s["headline"].split()]
+            if re.sub(r"\W", "", s["accent"]).lower() not in wl:
+                s["accent"] = None
+        clean.append(s)
+    if clean[0]["type"] != "hook":
+        clean[0]["type"] = "hook"
+        clean[0].setdefault("headline", normalize(data.get("title", ""))[:50])
+    if clean[-1]["type"] != "cta":
+        clean.append({"type": "cta", "headline": "Follow for daily tech news",
+                      "voice": "Follow for more daily tech news."})
+    narration = " ".join(s["voice"] for s in clean)
+    if len(narration) < 400 or len(narration) > 1600:
+        raise ValueError(f"narration length {len(narration)}")
+    title = normalize(str(data.get("title", "")))
+    if not title or not is_ascii(title):
+        raise ValueError("bad title")
+    return {
+        "title": title[:100],
+        "description": normalize(str(data.get("description", ""))),
+        "keywords": [normalize(str(k)) for k in data.get("keywords", [])][:5],
+        "tags": [normalize(str(t)) for t in data.get("tags", [])][:10],
+        "narration": narration,
+        "scenes": clean,
+    }
+
+
+def write_script(news_text, source_text):
+    last = None
+    for attempt in range(6):
+        model = MODELS[attempt % len(MODELS)]
         try:
             r = requests.post(
                 "https://openrouter.ai/api/v1/chat/completions",
                 headers={"Authorization": f"Bearer {API_KEY}"},
-                json={
-                    "model": model,
-                    "max_tokens": 1500,
-                    "messages": [
-                        {"role": "system", "content": system},
-                        {"role": "user", "content": user},
-                    ],
-                },
-                timeout=180,
+                json={"model": model, "temperature": 0.5,
+                      "messages": [{"role": "system", "content": SYSTEM_PROMPT},
+                                   {"role": "user", "content": news_text}]},
+                timeout=150,
             )
-            body = r.json()
-            raw = body["choices"][0]["message"]["content"] or ""
-            print("model:", body.get("model", model))
-        except Exception as e:
-            print(f"attempt {attempt} error:", e, (r.text[:200] if r is not None else ""))
-        if raw.strip():
-            return raw
-        time.sleep(15)
-    raise RuntimeError("The model did not respond")
-
-
-def narration_ok(text):
-    if len(text) < 400:
-        return False
-    return not re.search(r"[^\x00-\x7F\u2018\u2019\u201C\u201D\u2013\u2014\u2026]", text)
-
-
-def write_script(news):
-    for attempt in range(1, 5):
-        raw = call_llm(SYSTEM_PROMPT, news)
-        start, end = raw.find("{"), raw.rfind("}")
-        if start != -1 and end > start:
-            try:
-                data = json.loads(raw[start : end + 1])
-                if narration_ok(data.get("narration", "")):
-                    return data
-                print(f"attempt {attempt}: narration rejected.")
-            except json.JSONDecodeError:
-                print(f"attempt {attempt}: invalid JSON.")
-        else:
-            print(f"attempt {attempt}: no JSON found:", raw[:200])
-        time.sleep(5)
-    raise RuntimeError("The model did not produce an acceptable script")
-
-
-def clean_for_tts(text):
-    text = re.sub(r"[*#_`>\[\]()\"]", " ", text)
-    text = re.sub(r"\s+", " ", text)
-    return text.strip()
+            if r.status_code != 200:
+                raise RuntimeError(f"{model}: HTTP {r.status_code} {r.text[:120]}")
+            raw = r.json()["choices"][0]["message"]["content"] or ""
+            clean = re.sub(r"```json|```", "", raw).strip()
+            s, e = clean.find("{"), clean.rfind("}")
+            data = json.loads(clean[s:e + 1])
+            return validate(data, source_text)
+        except Exception as ex:  # noqa: BLE001
+            last = ex
+            print(f"attempt {attempt + 1} failed ({model}): {ex}")
+            time.sleep(15)
+    raise RuntimeError(f"script generation failed: {last}")
 
 
 async def make_audio(text, path):
@@ -123,14 +175,16 @@ async def make_audio(text, path):
 
 def main():
     os.makedirs(OUT, exist_ok=True)
-    news = get_news()
-    data = write_script(news)
-    data["narration"] = clean_for_tts(data["narration"])
+    items = get_news()
+    news_text, focus_title = news_prompt(items)
+    print("focus:", focus_title)
+    source_text = " ".join(f"{t} {s} {m}" for t, s, m in items)
+    data = write_script(news_text, source_text)
     with open(f"{OUT}/script.json", "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
     asyncio.run(make_audio(data["narration"], f"{OUT}/narration.mp3"))
     print("title:", data["title"])
-    print("done: output/script.json and output/narration.mp3")
+    print("scenes:", [s["type"] for s in data["scenes"]])
 
 
 if __name__ == "__main__":
