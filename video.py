@@ -8,6 +8,8 @@ import urllib.parse
 
 import requests
 
+from PIL import ImageFont
+
 OUT = "output"
 CHANNEL = os.environ.get("CHANNEL_NAME", "TREND PULSE DAILY")
 W, H = 1280, 720
@@ -139,6 +141,135 @@ def box(x, y, w, h, color, enable=None):
     return s
 
 
+def speech_span(audio, total):
+    """Return (start, end) seconds of real speech, ignoring leading/trailing silence."""
+    import array
+    import math
+    raw = subprocess.run(
+        ["ffmpeg", "-v", "error", "-i", audio, "-ac", "1", "-ar", "8000", "-f", "s16le", "-"],
+        capture_output=True, check=True,
+    ).stdout
+    a = array.array("h")
+    a.frombytes(raw[: len(raw) // 2 * 2])
+    step = 160  # 20 ms
+    rms = []
+    for i in range(0, len(a) - step, step):
+        seg = a[i:i + step]
+        rms.append(math.sqrt(sum(s * s for s in seg) / step))
+    if not rms:
+        return 0.0, total
+    ref = sorted(rms)[int(len(rms) * 0.9)] or 1.0
+    thr = ref * 0.06
+    idx = [i for i, v in enumerate(rms) if v > thr]
+    if not idx:
+        return 0.0, total
+    return max(0.0, idx[0] * 0.02 - 0.05), min(total, (idx[-1] + 1) * 0.02 + 0.1)
+
+
+def build_words(narration, t_start, t_end):
+    toks = narration.split()
+    weights = []
+    for w in toks:
+        base = len(w) + 1
+        if w[-1] in ".!?":
+            base += 7
+        elif w[-1] in ",;:":
+            base += 3
+        weights.append(base)
+    tot = sum(weights)
+    out, t = [], t_start
+    for w, wt in zip(toks, weights):
+        dur = (t_end - t_start) * wt / tot
+        out.append((w, t, t + dur))
+        t += dur
+    return out
+
+
+def make_chunks(words, font, max_w=1120, max_words=5):
+    chunks, cur = [], []
+    for item in words:
+        cur.append(item)
+        text = " ".join(x[0] for x in cur)
+        end_punct = item[0][-1] in ".!?,;:"
+        if len(cur) >= max_words or end_punct or font.getlength(text) > max_w:
+            chunks.append(cur)
+            cur = []
+    if cur:
+        chunks.append(cur)
+    # merge a lone short tail into the previous chunk when it fits
+    merged = []
+    for c in chunks:
+        if merged and len(c) <= 1 and font.getlength(" ".join(x[0] for x in merged[-1] + c)) <= max_w:
+            merged[-1] = merged[-1] + c
+        else:
+            merged.append(c)
+    return merged
+
+
+def speech_span(audio, total):
+    """Return (start, end) seconds of real speech, ignoring leading/trailing silence."""
+    import array
+    import math
+    raw = subprocess.run(
+        ["ffmpeg", "-v", "error", "-i", audio, "-ac", "1", "-ar", "8000", "-f", "s16le", "-"],
+        capture_output=True, check=True,
+    ).stdout
+    a = array.array("h")
+    a.frombytes(raw[: len(raw) // 2 * 2])
+    step = 160  # 20 ms
+    rms = []
+    for i in range(0, len(a) - step, step):
+        seg = a[i:i + step]
+        rms.append(math.sqrt(sum(s * s for s in seg) / step))
+    if not rms:
+        return 0.0, total
+    ref = sorted(rms)[int(len(rms) * 0.9)] or 1.0
+    thr = ref * 0.06
+    idx = [i for i, v in enumerate(rms) if v > thr]
+    if not idx:
+        return 0.0, total
+    return max(0.0, idx[0] * 0.02 - 0.05), min(total, (idx[-1] + 1) * 0.02 + 0.1)
+
+
+def build_words(narration, t_start, t_end):
+    toks = narration.split()
+    weights = []
+    for w in toks:
+        base = len(w) + 1
+        if w[-1] in ".!?":
+            base += 7
+        elif w[-1] in ",;:":
+            base += 3
+        weights.append(base)
+    tot = sum(weights)
+    out, t = [], t_start
+    for w, wt in zip(toks, weights):
+        dur = (t_end - t_start) * wt / tot
+        out.append((w, t, t + dur))
+        t += dur
+    return out
+
+
+def make_chunks(words, font, max_w=1120, max_words=5):
+    chunks, cur = [], []
+    for item in words:
+        cur.append(item)
+        text = " ".join(x[0] for x in cur)
+        end_punct = item[0][-1] in ".!?,;:"
+        if len(cur) >= max_words or end_punct or font.getlength(text) > max_w:
+            chunks.append(cur)
+            cur = []
+    if cur:
+        chunks.append(cur)
+    merged = []
+    for c in chunks:
+        if merged and len(c) <= 1 and font.getlength(" ".join(x[0] for x in merged[-1] + c)) <= max_w:
+            merged[-1] = merged[-1] + c
+        else:
+            merged.append(c)
+    return merged
+
+
 def main():
     with open(f"{OUT}/script.json", encoding="utf-8") as f:
         data = json.load(f)
@@ -163,38 +294,47 @@ def main():
     chain.append(dt(f"{OUT}/txt/channel.txt", 20, "0xcbd5e1", "w-text_w-40", "y=26"))
 
     # ---- headline (animated entrance) ----
-    title_lines = textwrap.wrap(data["title"], width=34)[:2]
+    title_lines = textwrap.wrap(data["title"], width=38)[:2]
     for i, line in enumerate(title_lines):
         p = f"{OUT}/txt/title_{i}.txt"
         write_text(p, line)
-        chain.append(dt(p, 44, "white", 78, rise(0.1 + i * 0.12, 112 + i * 56),
+        chain.append(dt(p, 42, "white", 78, rise(0.1 + i * 0.12, 100 + i * 54),
                         alpha_expr=f"alpha='min(1,max(0,(t-{0.1 + i * 0.12:.2f})/0.5))'"))
-    bar_h = 56 * len(title_lines)
-    chain.append(box(52, 116, 8, bar_h, f"{SKY}@1"))
+    chain.append(box(52, 104, 8, 54 * len(title_lines) - 8, f"{SKY}@1"))
 
-    # ---- caption panel ----
-    chain.append(box(0, 290, W, 215, "black@0.42"))
-    chain.append(box(0, 290, 10, 215, f"{SKY}@1"))
+    # ---- word-by-word captions (karaoke style) ----
+    CAP_Y, CAP_H, CAP_SIZE = 322, 130, 62
+    chain.append(box(0, CAP_Y, W, CAP_H, "black@0.38"))
+    chain.append(box(0, CAP_Y, W, 3, f"{SKY}@0.7"))
+    chain.append(box(0, CAP_Y + CAP_H - 3, W, 3, f"{SKY}@0.7"))
 
-    t = 0.0
-    n_s = len(sentences)
-    for i, s in enumerate(sentences):
-        dur = lengths[i] * scale
-        lines = textwrap.wrap(s, width=36)[:4]
-        size = 42 if len(lines) <= 3 else 36
-        lh = 56 if len(lines) <= 3 else 48
-        top = 290 + (215 - len(lines) * lh) / 2
-        t0, t1 = t, t + dur
-        for j, line in enumerate(lines):
-            p = f"{OUT}/txt/s{i}_{j}.txt"
-            write_text(p, line)
-            chain.append(dt(p, size, "white", 70, rise(t0, f"{top + j * lh:.0f}", 22, 0.35),
-                            alpha_expr=fade(t0, t1)))
-        p = f"{OUT}/txt/n{i}.txt"
-        write_text(p, f"{i + 1:02d} / {n_s:02d}")
-        chain.append(dt(p, 18, SKY, "w-text_w-40", "y=300",
-                        alpha_expr=fade(t0, t1, 0.2, 0.2)))
-        t = t1
+    t_s, t_e = speech_span(audio, total)
+    words = build_words(data["narration"], t_s, t_e)
+    cap_font = ImageFont.truetype(FONT, CAP_SIZE)
+    chunks = make_chunks(words, cap_font)
+    text_y = CAP_Y + (CAP_H - CAP_SIZE) // 2 - 6
+    wi = 0
+    for ci, chunk in enumerate(chunks):
+        c0 = chunk[0][1] if ci > 0 else 0.0
+        c1 = chunks[ci + 1][0][1] if ci + 1 < len(chunks) else total
+        full_text = " ".join(x[0] for x in chunk)
+        cw = cap_font.getlength(full_text)
+        x0 = (W - cw) / 2
+        for k, (w, a, b) in enumerate(chunk):
+            prefix = " ".join(x[0] for x in chunk[:k]) + (" " if k else "")
+            wx = x0 + cap_font.getlength(prefix)
+            p = f"{OUT}/txt/w{wi}.txt"
+            write_text(p, w)
+            wi += 1
+            nxt = chunk[k + 1][1] if k + 1 < len(chunk) else c1
+            chain.append(dt(p, CAP_SIZE, "white", f"{wx:.1f}",
+                            rise(c0, text_y, 16, 0.16),
+                            alpha_expr=fade(c0, c1, 0.12, 0.08)))
+            chain.append(
+                f"drawtext=fontfile={FONT}:textfile={p}:fontcolor=white:fontsize={CAP_SIZE}:"
+                f"x={wx:.1f}:y={text_y}:box=1:boxcolor=0xf97316@1:boxborderw=10:"
+                f"enable='between(t,{a:.2f},{nxt:.2f})'"
+            )
 
     # ---- keyword pills ----
     x = 40
@@ -204,11 +344,11 @@ def main():
         label = "# " + kw
         write_text(p, label)
         chain.append(
-            f"drawtext=fontfile={FONT}:textfile={p}:fontcolor=white:fontsize=19:x={x}:y=520:"
+            f"drawtext=fontfile={FONT}:textfile={p}:fontcolor=white:fontsize=20:x={x}:y=490:"
             f"box=1:boxcolor=0x1e3a8a@0.9:boxborderw=9:"
             f"alpha='min(1,max(0,(t-{1.0 + k * 0.35:.2f})/0.4))'"
         )
-        x += int(len(label) * 12.6) + 46
+        x += int(len(label) * 13.2) + 46
 
     # ---- news ticker ----
     chain.append(box(0, 650, W, 62, f"{NAVY}@0.92"))
@@ -231,7 +371,7 @@ def main():
     write_text(f"{OUT}/txt/end2.txt", "SUBSCRIBE")
     chain.append(dt(f"{OUT}/txt/end2.txt", 36, "white", "(w-text_w)/2", "y=383",
                     extra=f"enable='gte(t,{total + 0.5:.2f})'"))
-    chain.append(dt(f"{OUT}/txt/channel.txt", 28, SKY, "(w-text_w)/2", "y=490",
+    chain.append(dt(f"{OUT}/txt/channel.txt", 28, SKY, "(w-text_w)/2", "y=530",
                     extra=f"enable='{en}'"))
 
     # ---- background ----
@@ -276,8 +416,8 @@ def main():
         "[base]format=yuv420p[b2]",
         "[b2][grid]blend=all_mode=screen:all_opacity=0.10,vignette=PI/5:mode=backward[bg]",
         f"[0:a]apad=pad_dur={END_CARD},asplit=2[a_out][a_vis]",
-        f"[a_vis]volume=2.5,showwaves=s={W}x84:mode=cline:scale=sqrt:colors=0x7dd3fc:rate={FPS}[wv]",
-        "[bg][wv]overlay=0:556[v0]",
+        f"[a_vis]volume=2.5,showwaves=s={W}x70:mode=cline:scale=sqrt:colors=0x7dd3fc:rate={FPS}[wv]",
+        "[bg][wv]overlay=0:572[v0]",
         f"color=c={SKY}:s={W}x8:r={FPS}:d={full:.2f}[bar]",
         f"[v0][bar]overlay=x='-W+W*t/{full:.2f}':y={H - 8}[v1]",
         "[v1]" + ",".join(chain) + ",format=yuv420p[vout]",
