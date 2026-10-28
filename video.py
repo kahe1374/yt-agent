@@ -257,9 +257,16 @@ def background(theme, decor, t, seed=0):
 
 
 def add_grain(im):
-    if "grain" not in _cache:
-        _cache["grain"] = Image.effect_noise((W, H), 38).convert("RGB")
-    return Image.blend(im, _cache["grain"], 0.035)
+    """Final grade: crisp contrast + richer colour, soft vignette, almost no grain."""
+    from PIL import ImageEnhance
+    if "vig" not in _cache:
+        yy, xx = np.mgrid[0:H, 0:W]
+        d = np.sqrt(((xx - W / 2) / (W / 2)) ** 2 + ((yy - H / 2) / (H / 2)) ** 2)
+        _cache["vig"] = (1.0 - 0.10 * np.clip(d - 0.55, 0, 1) ** 1.5)[..., None].astype(np.float32)
+    im = ImageEnhance.Contrast(im).enhance(1.10)
+    im = ImageEnhance.Color(im).enhance(1.18)
+    a = np.asarray(im, dtype=np.float32) * _cache["vig"]
+    return Image.fromarray(np.clip(a, 0, 255).astype(np.uint8))
 
 
 # ------------------------------------------------------------------ icons
@@ -1044,7 +1051,7 @@ def main():
          "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{W}x{H}", "-r", str(FPS), "-i", "-",
          "-i", f"{OUT}/mix.wav",
          "-map", "0:v", "-map", "1:a",
-         "-c:v", "libx264", "-preset", "veryfast", "-crf", "20", "-pix_fmt", "yuv420p",
+         "-c:v", "libx264", "-preset", "fast", "-crf", "16", "-pix_fmt", "yuv420p",
          "-c:a", "aac", "-b:a", "160k", "-t", f"{full:.2f}", f"{OUT}/video.mp4"],
         stdin=subprocess.PIPE)
     for fi in range(n_frames):
