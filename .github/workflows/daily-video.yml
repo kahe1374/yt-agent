@@ -1,31 +1,47 @@
-name: daily-video
+name: Daily Tech Video
 
 on:
-  workflow_dispatch:
   schedule:
     - cron: "0 5 * * *"
+  workflow_dispatch:
 
 jobs:
-  build:
+  make-video:
     runs-on: ubuntu-latest
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - run: sudo apt-get update && sudo apt-get install -y ffmpeg fonts-dejavu-core fonts-inter
-      - run: pip install -r requirements.txt
-      - run: python main.py
+
+      - name: Install system packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg fonts-dejavu-core fonts-inter
+
+      - name: Install Python packages
+        run: pip install -r requirements.txt
+
+      - name: Write script and narration
         env:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-          MODELS: nvidia/nemotron-3-super-120b-a12b:free,openrouter/free,thinkingmachines/inkling:free,nvidia/nemotron-3-ultra-550b-a55b:free,google/gemma-4-26b-a4b-it:free,openrouter/free
-      - run: python video.py
+          MODELS: ${{ vars.MODELS }}
+        run: python main.py
+
+      - name: Render video
+        run: python video.py
+
       - uses: actions/upload-artifact@v4
         with:
-          name: output
+          name: video
           path: output/
-      - run: python upload.py
+
+      - name: Upload to YouTube
         env:
           YT_CLIENT_ID: ${{ secrets.YT_CLIENT_ID }}
           YT_CLIENT_SECRET: ${{ secrets.YT_CLIENT_SECRET }}
           YT_REFRESH_TOKEN: ${{ secrets.YT_REFRESH_TOKEN }}
+          PRIVACY: public
+        run: python upload.py
