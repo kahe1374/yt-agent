@@ -22,20 +22,6 @@ ORANGE = (249, 115, 22)
 RED = (239, 68, 68)
 INK = (27, 22, 20)
 
-PALETTES = {
-    "sunset":   dict(bg0=(240, 98, 58),  bg1=(252, 140, 96),  fg=(255, 255, 255), sub=(255, 236, 224), accent=(27, 22, 20),    pill=(27, 22, 20),    pill_fg=(255, 255, 255), card=(255, 255, 255)),
-    "ocean":    dict(bg0=(14, 70, 160),  bg1=(40, 120, 215),  fg=(255, 255, 255), sub=(210, 230, 255), accent=(255, 205, 60),  pill=(255, 205, 60),  pill_fg=(27, 22, 20),    card=(255, 255, 255)),
-    "violet":   dict(bg0=(84, 38, 176),  bg1=(130, 80, 225),  fg=(255, 255, 255), sub=(228, 214, 255), accent=(250, 204, 21),  pill=(250, 204, 21),  pill_fg=(27, 22, 20),    card=(255, 255, 255)),
-    "mint":     dict(bg0=(12, 140, 112), bg1=(46, 186, 150),  fg=(255, 255, 255), sub=(214, 255, 240), accent=(20, 30, 40),    pill=(20, 30, 40),    pill_fg=(255, 255, 255), card=(255, 255, 255)),
-    "rose":     dict(bg0=(206, 40, 104), bg1=(244, 92, 148),  fg=(255, 255, 255), sub=(255, 226, 238), accent=(255, 230, 120), pill=(255, 230, 120), pill_fg=(27, 22, 20),    card=(255, 255, 255)),
-    "cream":    dict(bg0=(253, 246, 238), bg1=(251, 222, 202), fg=(27, 22, 20),   sub=(90, 80, 74),    accent=(234, 88, 12),   pill=(234, 88, 12),   pill_fg=(255, 255, 255), card=(255, 255, 255)),
-    "sky":      dict(bg0=(232, 244, 255), bg1=(190, 222, 252), fg=(15, 30, 60),   sub=(60, 80, 120),   accent=(37, 99, 235),   pill=(37, 99, 235),   pill_fg=(255, 255, 255), card=(255, 255, 255)),
-    "night":    dict(bg0=(12, 7, 22),    bg1=(44, 16, 46),    fg=(255, 255, 255), sub=(200, 190, 215), accent=(251, 146, 60),  pill=(251, 146, 60),  pill_fg=(20, 12, 8),     card=(255, 255, 255)),
-    "midnight": dict(bg0=(6, 12, 30),    bg1=(16, 38, 84),    fg=(255, 255, 255), sub=(190, 210, 240), accent=(34, 211, 238),  pill=(34, 211, 238),  pill_fg=(10, 20, 30),    card=(255, 255, 255)),
-}
-STYLES = ["rays", "blobs", "stripes", "rings", "dots", "waves", "glow"]
-
-
 # ------------------------------------------------------------------ utils
 
 def _font_path():
@@ -168,9 +154,23 @@ def fit_text(text, max_w, max_lines, sizes):
     return s, wrap_px(text, font(s), max_w)[:max_lines]
 
 
+THEMES = {
+    "cream": dict(bg0=(253, 248, 242), bg1=(250, 229, 210), fg=INK, sub=(112, 100, 92), accent=ORANGE,
+                  accent2=(124, 58, 237), card=(255, 255, 255), cardfg=INK, dark=False,
+                  pill=ORANGE, pill_fg=(255, 255, 255)),
+    "dark": dict(bg0=(14, 9, 28), bg1=(42, 16, 52), fg=(255, 255, 255), sub=(190, 180, 212),
+                 accent=(251, 146, 60), accent2=(139, 92, 246), card=(38, 28, 58), cardfg=(255, 255, 255),
+                 dark=True, pill=(251, 146, 60), pill_fg=(20, 12, 8)),
+    "sun": dict(bg0=(238, 96, 56), bg1=(252, 150, 100), fg=(255, 255, 255), sub=(255, 236, 224),
+                accent=INK, accent2=(255, 214, 160), card=(255, 255, 255), cardfg=INK, dark=False,
+                pill=INK, pill_fg=(255, 255, 255)),
+}
+DECORS = ["blobs", "grid", "rings", "floaters", "beams", "dots"]
+
+
 # ------------------------------------------------------------------ backgrounds
 
-_bg_cache = {}
+_cache = {}
 
 
 def _gradient(c_top, c_bot):
@@ -187,109 +187,234 @@ def _blob_sprite(r):
     return sp.filter(ImageFilter.GaussianBlur(r // 4))
 
 
-def _base(pal_name, vertical=True):
-    key = ("base", pal_name)
-    if key not in _bg_cache:
-        P = PALETTES[pal_name]
-        _bg_cache[key] = _gradient(P["bg0"], P["bg1"])
-    return _bg_cache[key].copy()
+def base_bg(theme):
+    key = ("base", theme)
+    if key not in _cache:
+        T = THEMES[theme]
+        _cache[key] = _gradient(T["bg0"], T["bg1"])
+    return _cache[key].copy()
 
 
-def background(pal_name, style, t, seed=0):
-    P = PALETTES[pal_name]
-    light = pal_name in ("cream", "sky")
-    im = _base(pal_name)
+def background(theme, decor, t, seed=0):
+    T = THEMES[theme]
+    im = base_bg(theme)
     d = ImageDraw.Draw(im)
-    hi = mix(P["bg1"], (255, 255, 255), 0.18 if not light else 0.0)
-    lo = mix(P["bg0"], (0, 0, 0), 0.12 if not light else 0.0)
-    tint = mix(P["bg1"], P["accent"], 0.25)
-
-    if style == "rays":
-        cx, cy = W / 2, 760 + (seed % 5) * 40
-        n = 22 + (seed % 3) * 4
-        for i in range(0, n, 2):
-            a0 = (i / n) * 2 * math.pi + t * 0.12
-            a1 = ((i + 1) / n) * 2 * math.pi + t * 0.12
-            R = 2600
-            d.polygon([(cx, cy), (cx + R * math.cos(a0), cy + R * math.sin(a0)),
-                       (cx + R * math.cos(a1), cy + R * math.sin(a1))], fill=hi if not light else tint)
-    elif style == "blobs":
-        key = ("blob", 330)
-        if key not in _bg_cache:
-            _bg_cache[key] = _blob_sprite(330)
-        sp = _bg_cache[key]
-        for i in range(4):
-            bx = W / 2 + 420 * math.sin(t * (0.25 + 0.07 * i) + i * 1.9 + seed)
-            by = H / 2 + 700 * math.sin(t * (0.19 + 0.05 * i) + i * 2.7 + seed * 0.7)
-            col = tint if i % 2 == 0 else hi
-            im.paste(Image.new("RGB", sp.size, col), (int(bx - 330), int(by - 330)),
-                     sp.point(lambda v_: int(v_ * 0.55)))
-    elif style == "stripes":
-        off = (t * 60) % 240
-        for k in range(-12, 22):
-            x0 = k * 240 + off
-            d.polygon([(x0, 0), (x0 + 110, 0), (x0 + 110 - 700, H), (x0 - 700, H)], fill=hi if k % 2 == 0 else lo)
-    elif style == "rings":
-        cx, cy = W / 2, 820
-        for k in range(14, 0, -1):
-            r = ((k * 150 + t * 90) % 2100)
-            d.ellipse([cx - r, cy - r, cx + r, cy + r], outline=hi if not light else tint, width=26)
-    elif style == "dots":
-        step = 90
+    mid = mix(T["bg0"], T["bg1"], 0.5)
+    c1 = mix(mid, (255, 255, 255) if theme != "cream" else T["accent"], 0.10 if theme != "cream" else 0.09)
+    c2 = mix(mid, T["accent2"], 0.14)
+    if decor == "blobs":
+        key = ("blob", 380)
+        if key not in _cache:
+            _cache[key] = _blob_sprite(380)
+        sp = _cache[key]
+        cols = [c2, mix(mid, T["accent"], 0.22 if theme != "sun" else 0.0) if theme != "sun" else (255, 190, 150), c1]
+        for i in range(3):
+            bx = W / 2 + 420 * math.sin(t * (0.22 + 0.06 * i) + i * 2.1 + seed)
+            by = H / 2 + 650 * math.sin(t * (0.17 + 0.05 * i) + i * 2.9 + seed * 0.7)
+            im.paste(Image.new("RGB", sp.size, cols[i]), (int(bx - 380), int(by - 380)),
+                     sp.point(lambda v_: int(v_ * 0.65)))
+    elif decor == "grid":
+        step = 108
+        ox, oy = (t * 14) % step, (t * 9) % step
+        for x in range(-step, W + step, step):
+            d.line([(x + ox, 0), (x + ox, H)], fill=c1, width=2)
+        for y in range(-step, H + step, step):
+            d.line([(0, y + oy), (W, y + oy)], fill=c1, width=2)
+    elif decor == "rings":
+        cx, cy = (W * 0.9, H * 0.18) if seed % 2 else (W * 0.1, H * 0.82)
+        for k in range(14):
+            r = (k * 190 + t * 55) % 2300
+            d.ellipse([cx - r, cy - r, cx + r, cy + r], outline=c1 if k % 2 else c2, width=4)
+    elif decor == "floaters":
+        rnd = np.random.RandomState(seed + 3)
+        for i in range(9):
+            sz = int(rnd.randint(90, 230))
+            bx = rnd.randint(0, W)
+            by = rnd.randint(0, H)
+            sp_ = 0.18 + 0.12 * (i % 3)
+            x = (bx + 80 * math.sin(t * sp_ + i)) % W
+            y = (by - t * 18 * (1 + i % 3)) % (H + 300) - 150
+            col = c1 if i % 2 else c2
+            if i % 3 == 0:
+                d.ellipse([x - sz / 2, y - sz / 2, x + sz / 2, y + sz / 2], outline=col, width=5)
+            elif i % 3 == 1:
+                d.rounded_rectangle([x - sz / 2, y - sz / 2, x + sz / 2, y + sz / 2], radius=sz // 4, fill=col)
+            else:
+                d.rounded_rectangle([x - sz / 2, y - sz / 2, x + sz / 2, y + sz / 2], radius=sz // 4,
+                                    outline=col, width=5)
+    elif decor == "beams":
+        for k in range(4):
+            x0 = (k * 380 + t * 28 * (1 + k % 2)) % (W + 900) - 500
+            d.polygon([(x0, 0), (x0 + 170, 0), (x0 + 170 - 1100, H), (x0 - 1100, H)], fill=c1 if k % 2 else c2)
+    else:  # dots
+        step = 74
         for gy in range(0, H + step, step):
             for gx in range(0, W + step, step):
-                ph = math.sin(t * 1.6 + gx * 0.012 + gy * 0.009 + seed)
-                r = 7 + 6 * ph
-                d.ellipse([gx - r, gy - r, gx + r, gy + r], fill=hi if not light else tint)
-    elif style == "waves":
-        for band in range(4):
-            col = mix(P["bg0"], P["bg1"], 0.25 + band * 0.22) if not light else mix(P["bg0"], tint, 0.25 + band * 0.2)
-            base_y = 1050 + band * 190
-            pts = [(0, H)]
-            for x in range(0, W + 40, 40):
-                pts.append((x, base_y + 70 * math.sin(x * 0.006 + t * (0.8 + band * 0.3) + band * 1.3 + seed)))
-            pts.append((W, H))
-            d.polygon(pts, fill=col)
-    else:  # glow
-        key = ("blob", 520)
-        if key not in _bg_cache:
-            _bg_cache[key] = _blob_sprite(520)
-        sp = _bg_cache[key]
-        gx = int(lerp(300, 780, (math.sin(t * 0.5 + seed) + 1) / 2))
-        gy = int(lerp(900, 1400, (math.cos(t * 0.4 + seed) + 1) / 2))
-        im.paste(Image.new("RGB", sp.size, tint if light else mix(P["accent"], P["bg1"], 0.4)),
-                 (gx - 520, gy - 520), sp.point(lambda v_: int(v_ * 0.5)))
-        d = ImageDraw.Draw(im)
-        for i in range(14):
-            x = (i * 83 + 7) % W
-            y = (i * 197 + 40 * math.sin(t * 0.7 + i)) % H
-            d.ellipse([x - 2, y - 2, x + 2, y + 2], fill=hi)
+                wv = math.sin(t * 1.4 + gx * 0.01 + gy * 0.008 + seed)
+                r = 4 + 3.5 * wv
+                d.ellipse([gx - r, gy - r, gx + r, gy + r], fill=c1)
     return im
+
+
+def add_grain(im):
+    if "grain" not in _cache:
+        _cache["grain"] = Image.effect_noise((W, H), 38).convert("RGB")
+    return Image.blend(im, _cache["grain"], 0.035)
+
+
+# ------------------------------------------------------------------ icons
+
+def _unit_icon(name, d, k, col, lw):
+    def P(*xy):
+        return [v * k for v in xy]
+
+    lwk = int(lw * k)
+    if name == "phone":
+        d.rounded_rectangle(P(30, 8, 70, 92), radius=int(11 * k), outline=col, width=lwk)
+        d.line(P(44, 19, 56, 19), fill=col, width=lwk)
+        d.ellipse(P(46, 78, 54, 86), fill=col)
+    elif name == "chip":
+        d.rectangle(P(28, 28, 72, 72), outline=col, width=lwk)
+        d.rectangle(P(41, 41, 59, 59), fill=col)
+        for i in (38, 50, 62):
+            d.line(P(i, 14, i, 28), fill=col, width=lwk)
+            d.line(P(i, 72, i, 86), fill=col, width=lwk)
+            d.line(P(14, i, 28, i), fill=col, width=lwk)
+            d.line(P(72, i, 86, i), fill=col, width=lwk)
+    elif name == "shield":
+        d.polygon(P(50, 7, 85, 20, 85, 52, 50, 93, 15, 52, 15, 20), outline=col, width=lwk)
+        d.line(P(34, 49, 46, 62, 68, 36), fill=col, width=lwk, joint="curve")
+    elif name == "bolt":
+        d.polygon(P(58, 5, 22, 56, 46, 56, 40, 95, 78, 40, 54, 40), fill=col)
+    elif name == "globe":
+        d.ellipse(P(12, 12, 88, 88), outline=col, width=lwk)
+        d.ellipse(P(34, 12, 66, 88), outline=col, width=lwk)
+        d.line(P(12, 50, 88, 50), fill=col, width=lwk)
+    elif name == "server":
+        for y in (14, 40, 66):
+            d.rounded_rectangle(P(16, y, 84, y + 22), radius=int(6 * k), outline=col, width=lwk)
+            d.ellipse(P(26, y + 7, 34, y + 15), fill=col)
+    elif name == "camera":
+        d.rounded_rectangle(P(10, 28, 90, 84), radius=int(10 * k), outline=col, width=lwk)
+        d.ellipse(P(35, 40, 65, 72), outline=col, width=lwk)
+        d.polygon(P(34, 28, 40, 16, 60, 16, 66, 28), fill=col)
+    elif name == "spark":
+        d.polygon(P(46, 6, 57, 38, 90, 49, 57, 60, 46, 94, 35, 60, 2, 49, 35, 38), fill=col)
+        d.polygon(P(82, 6, 86, 18, 98, 22, 86, 26, 82, 38, 78, 26, 66, 22, 78, 18), fill=col)
+    elif name == "lock":
+        d.rounded_rectangle(P(22, 44, 78, 92), radius=int(9 * k), fill=col)
+        d.arc(P(31, 8, 69, 64), 180, 360, fill=col, width=lwk)
+        d.line(P(31, 36, 31, 46), fill=col, width=lwk)
+        d.line(P(69, 36, 69, 46), fill=col, width=lwk)
+    elif name == "warning":
+        d.polygon(P(50, 10, 93, 87, 7, 87), outline=col, width=lwk)
+        d.line(P(50, 38, 50, 62), fill=col, width=lwk)
+        d.ellipse(P(45, 69, 55, 79), fill=col)
+    elif name == "battery":
+        d.rounded_rectangle(P(8, 30, 84, 70), radius=int(8 * k), outline=col, width=lwk)
+        d.rectangle(P(86, 43, 94, 57), fill=col)
+        d.rectangle(P(17, 39, 35, 61), fill=col)
+        d.rectangle(P(42, 39, 60, 61), fill=col)
+    elif name == "wifi":
+        for r in (16, 32, 48):
+            d.arc(P(50 - r, 78 - r, 50 + r, 78 + r), 225, 315, fill=col, width=lwk)
+        d.ellipse(P(44, 72, 56, 84), fill=col)
+    else:
+        _unit_icon("bolt", d, k, col, lw)
+
+
+_ICON_KEYS = [
+    ("shield", ["security", "flaw", "vulnerab", "hack", "breach", "malware", "exploit", "attack", "cyber",
+                "uefi", "firmware", "patch", "ransom", "leak"]),
+    ("chip", ["chip", "cpu", "processor", "nvidia", "intel", "amd", "qualcomm", "mediatek", "snapdragon",
+              "silicon", "gpu", "tsmc", "semiconductor"]),
+    ("phone", ["iphone", "phone", "samsung", "galaxy", "pixel", "android", "foldable", "smartphone", "vivo",
+               "xiaomi", "oneplus", "huawei", "apple", "ios"]),
+    ("spark", [" ai ", "openai", "chatgpt", "gemini", "claude", "model", "llm", "robot", "copilot", "agent",
+               "anthropic", "artificial"]),
+    ("server", ["server", "cloud", "data center", "datacenter", "aws", "azure", "outage"]),
+    ("camera", ["camera", "photo", "lens", "video"]),
+    ("battery", ["battery", "charging", "charger", "power"]),
+    ("wifi", ["wifi", "5g", "network", "internet", "router", "starlink", "satellite"]),
+    ("lock", ["privacy", "lock", "password", "encrypt", "passkey"]),
+    ("warning", ["warning", "recall", "crack", "issue", "problem", "bug", "fail"]),
+    ("globe", ["web", "browser", "google", "chrome", "site", "search"]),
+]
+
+
+def icon_for(text):
+    t = " " + (text or "").lower() + " "
+    best, score = "bolt", 0
+    for name, keys in _ICON_KEYS:
+        s = sum(t.count(k) for k in keys)
+        if s > score:
+            best, score = name, s
+    return best
+
+
+def glyph(name, size, color):
+    key = ("glyph", name, size, color)
+    if key not in _cache:
+        S = 4
+        im = Image.new("RGBA", (size * S, size * S), (0, 0, 0, 0))
+        d = ImageDraw.Draw(im)
+        _unit_icon(name, d, size * S / 100.0, color + (255,), 7)
+        _cache[key] = im.resize((size, size), Image.LANCZOS)
+    return _cache[key]
+
+
+def gradient_tile(w, h, c0, c1, radius):
+    key = ("tile", w, h, c0, c1, radius)
+    if key not in _cache:
+        g = Image.new("RGB", (w, h))
+        gd = ImageDraw.Draw(g)
+        for i in range(w + h):
+            gd.line([(i, 0), (i - h, h)], fill=mix(c0, c1, i / (w + h)), width=2)
+        m = Image.new("L", (w * 2, h * 2), 0)
+        ImageDraw.Draw(m).rounded_rectangle([0, 0, w * 2 - 1, h * 2 - 1], radius=radius * 2, fill=255)
+        _cache[key] = (g, m.resize((w, h), Image.LANCZOS))
+    return _cache[key]
+
+
+def icon_tile(im, name, cx, cy, size, c0, c1, scale=1.0, shadow=True):
+    s = int(size * scale)
+    if s < 8:
+        return
+    g, m = gradient_tile(s, s, c0, c1, s // 4)
+    x, y = int(cx - s / 2), int(cy - s / 2)
+    if shadow:
+        key = ("tshadow", s)
+        if key not in _cache:
+            sp = Image.new("L", (s + 80, s + 80), 0)
+            ImageDraw.Draw(sp).rounded_rectangle([40, 40, 40 + s, 40 + s], radius=s // 4, fill=110)
+            _cache[key] = sp.filter(ImageFilter.GaussianBlur(14))
+        sp = _cache[key]
+        im.paste(Image.new("RGB", sp.size, (30, 14, 10)), (x - 40, y - 40 + 14), sp)
+    im.paste(g, (x, y), m)
+    gl = glyph(name, int(s * 0.58), (255, 255, 255))
+    im.paste(gl, (int(cx - gl.size[0] / 2), int(cy - gl.size[1] / 2)), gl)
 
 
 # ------------------------------------------------------------------ drawing helpers
 
-_shadow_cache = {}
+def card(im, x, y, w, h, T, radius=44):
+    x, y, w, h = int(x), int(y), int(w), int(h)
+    key = ("shadow", w, h, radius)
+    if key not in _cache:
+        sp = Image.new("L", (w + 140, h + 140), 0)
+        ImageDraw.Draw(sp).rounded_rectangle([70, 70, 70 + w, 70 + h], radius=radius, fill=150)
+        _cache[key] = sp.filter(ImageFilter.GaussianBlur(26))
+    sp = _cache[key]
+    im.paste(Image.new("RGB", sp.size, (20, 8, 20) if T["dark"] else (60, 30, 10)),
+             (int(x - 70), int(y - 70 + 22)), sp)
+    d = ImageDraw.Draw(im)
+    d.rounded_rectangle([x, y, x + w, y + h], radius=radius, fill=T["card"])
+    border = (255, 255, 255, 0)
+    edge = mix(T["card"], (255, 255, 255), 0.18) if T["dark"] else mix(T["card"], (0, 0, 0), 0.07)
+    d.rounded_rectangle([x, y, x + w, y + h], radius=radius, outline=edge, width=2)
 
 
-def card(im, x, y, w, h, fill, radius=44, shadow=True):
-    if shadow:
-        key = (w, h, radius)
-        if key not in _shadow_cache:
-            sp = Image.new("L", (w + 120, h + 120), 0)
-            ImageDraw.Draw(sp).rounded_rectangle([60, 60, 60 + w, 60 + h], radius=radius, fill=120)
-            _shadow_cache[key] = sp.filter(ImageFilter.GaussianBlur(22))
-        sp = _shadow_cache[key]
-        im.paste(Image.new("RGB", sp.size, (40, 20, 10)), (int(x - 60), int(y - 60 + 18)), sp)
-    ImageDraw.Draw(im).rounded_rectangle([x, y, x + w, y + h], radius=radius, fill=fill)
-
-
-def centered(d, text, cx, cy, size, fill):
-    d.text((cx, cy), text, font=font(size), fill=fill, anchor="mm")
-
-
-def line_with_accent(d, im, line, accent, cx, cy, size, fg, pill, pill_fg, pop=1.0):
-    """Draw one centered line; the accent word gets a rounded pill behind it."""
+def line_with_accent(d, im, line, accent, cx, cy, size, fg, pill, pill_fg):
     f = font(size)
     words = line.split()
     space = f.getlength(" ")
@@ -297,8 +422,7 @@ def line_with_accent(d, im, line, accent, cx, cy, size, fg, pill, pill_fg, pop=1
     x = cx - total / 2
     for w in words:
         wl = f.getlength(w)
-        is_acc = accent and re.sub(r"\W", "", w).lower() == re.sub(r"\W", "", accent).lower()
-        if is_acc:
+        if accent_match(w, accent):
             pad = size * 0.22
             d.rounded_rectangle([x - pad, cy - size * 0.62, x + wl + pad, cy + size * 0.62],
                                 radius=int(size * 0.3), fill=pill)
@@ -308,18 +432,22 @@ def line_with_accent(d, im, line, accent, cx, cy, size, fg, pill, pill_fg, pop=1
         x += wl + space
 
 
-def kicker(im, d, text, P, lt, y=300):
+def kicker(im, d, text, T, lt, y=300):
     if not text:
         return
     p = e_out(lt / 0.4)
-    f = font(36)
+    f = font(34)
     tw = f.getlength(text)
-    w, h = tw + 90, 80
+    w, h = tw + 96, 76
     x = (W - w) / 2
     yy = y - (1 - p) * 40
-    d.rounded_rectangle([x, yy, x + w, yy + h], radius=40, fill=(24, 18, 30))
-    d.ellipse([x + 26, yy + 31, x + 44, yy + 49], fill=RED)
-    d.text((x + 62, yy + h / 2), text, font=f, fill=(255, 255, 255), anchor="lm")
+    d.rounded_rectangle([x, yy, x + w, yy + h], radius=38, fill=(24, 18, 30))
+    d.ellipse([x + 28, yy + 29, x + 46, yy + 47], fill=RED)
+    d.text((x + 64, yy + h / 2), text, font=f, fill=(255, 255, 255), anchor="lm")
+
+
+def accent_match(word, accent):
+    return bool(accent) and re.sub(r"\W", "", word).lower() == re.sub(r"\W", "", accent).lower()
 
 
 # ------------------------------------------------------------------ scenes
@@ -328,53 +456,100 @@ DEFAULT_KICKER = {"hook": "BREAKING TECH", "stat": "BY THE NUMBERS", "cards": "K
                   "statement": "WHY IT MATTERS", "cta": ""}
 
 
-def accent_match(word, accent):
-    return bool(accent) and re.sub(r"\W", "", word).lower() == re.sub(r"\W", "", accent).lower()
+def news_card_layer(T, title, icon):
+    key = ("newscard", title, icon, T["accent"])
+    if key in _cache:
+        return _cache[key]
+    LW, LH, cw, ch = 940, 520, 800, 400
+    x0, y0 = 70, 50
+    layer = Image.new("RGBA", (LW, LH), (0, 0, 0, 0))
+    sh = Image.new("L", (LW, LH), 0)
+    ImageDraw.Draw(sh).rounded_rectangle([x0, y0 + 22, x0 + cw, y0 + ch + 22], radius=48, fill=130)
+    sh = sh.filter(ImageFilter.GaussianBlur(24))
+    layer.paste(Image.new("RGBA", (LW, LH), (30, 14, 10, 255)), (0, 0), sh)
+    d = ImageDraw.Draw(layer)
+    d.rounded_rectangle([x0, y0, x0 + cw, y0 + ch], radius=48, fill=(255, 255, 255, 255))
+    # header
+    d.ellipse([x0 + 30, y0 + 28, x0 + 82, y0 + 80], fill=ORANGE)
+    g = glyph("bolt", 30, (255, 255, 255))
+    layer.paste(g, (x0 + 41, y0 + 39), g)
+    d.text((x0 + 98, y0 + 54), "Trend Pulse Daily", font=font(30), fill=INK, anchor="lm")
+    d.text((x0 + cw - 32, y0 + 54), "now", font=font(26), fill=(150, 140, 134), anchor="rm")
+    # image area
+    ix0, iy0, ix1, iy1 = x0 + 30, y0 + 102, x0 + cw - 30, y0 + 252
+    gt, gm = gradient_tile(ix1 - ix0, iy1 - iy0, T["accent"] if T["accent"] != INK else ORANGE,
+                           T["accent2"], 30)
+    layer.paste(gt.convert("RGBA"), (ix0, iy0), gm)
+    gl = glyph(icon, 130, (255, 255, 255))
+    layer.paste(gl, ((ix0 + ix1) // 2 - 65, (iy0 + iy1) // 2 - 65), gl)
+    # headline
+    s, lines = fit_text(title, cw - 70, 2, [40, 36, 32])
+    for i, ln in enumerate(lines):
+        d.text((x0 + 34, y0 + 282 + i * s * 1.25), ln, font=font(s), fill=INK, anchor="lm")
+    _cache[key] = layer
+    return layer
 
 
-def scene_hook(im, d, sc, P, lt, dur):
-    kicker(im, d, sc.get("kicker", DEFAULT_KICKER["hook"]), P, lt, 300)
-    size, lines = fit_text(sc.get("headline", ""), 900, 4, [168, 150, 132, 116, 100])
+def scene_hook(im, d, sc, T, lt, dur):
+    kicker(im, d, sc.get("kicker", DEFAULT_KICKER["hook"]), T, lt, 250)
+    size, lines = fit_text(sc.get("headline", ""), 900, 3, [150, 136, 122, 110, 98])
     lh = size * 1.18
-    top = 820 - (len(lines) * lh) / 2 + 40
+    top = 600 - (len(lines) * lh) / 2 + lh / 2
     for i, ln in enumerate(lines):
         p = e_back((lt - 0.08 * i - 0.1) / 0.5)
         if p <= 0.01:
             continue
         s = size * (0.45 + 0.55 * p)
         line_with_accent(d, im, ln, sc.get("accent"), W / 2, top + i * lh + (1 - e_out(p)) * 50,
-                         s, P["fg"], P["pill"], P["pill_fg"])
+                         s, T["fg"], T["pill"], T["pill_fg"])
+    icon = icon_for(sc.get("headline", "") + " " + sc.get("_context", ""))
+    layer = news_card_layer(T, sc.get("_title") or sc.get("headline", ""), icon)
+    pcard = e_back((lt - 0.45) / 0.65, 1.3)
+    if pcard > 0.02:
+        ang = -3.5 + 1.2 * math.sin(lt * 1.6)
+        rot = layer.rotate(ang, resample=Image.BICUBIC, expand=True)
+        scl = clamp(pcard, 0, 1.06)
+        if abs(scl - 1) > 0.01:
+            rot = rot.resize((int(rot.size[0] * scl), int(rot.size[1] * scl)), Image.BILINEAR)
+        cy = 1130 + (1 - clamp(pcard, 0, 1)) * 260 + 8 * math.sin(lt * 2.1)
+        im.paste(rot, (int(W / 2 - rot.size[0] / 2), int(cy - rot.size[1] / 2)), rot)
 
 
-def scene_statement(im, d, sc, P, lt, dur):
-    kicker(im, d, sc.get("kicker", DEFAULT_KICKER["statement"]), P, lt, 300)
-    q = e_back((lt - 0.05) / 0.5)
-    if q > 0:
-        d.text((90, 470 - (1 - e_out(q)) * 60), "\u201c", font=font(380 * clamp(q, 0.3, 1.1)),
-               fill=P["accent"], anchor="la")
-    size, lines = fit_text(sc.get("headline", ""), 860, 5, [108, 96, 86, 76, 66])
-    lh = size * 1.25
-    top = 760
+def scene_statement(im, d, sc, T, lt, dur):
+    kicker(im, d, sc.get("kicker", DEFAULT_KICKER["statement"]), T, lt, 250)
+    size, lines = fit_text(sc.get("headline", ""), 780, 5, [104, 94, 84, 74, 64])
+    lh = size * 1.26
+    ch = len(lines) * lh + 250
+    cy0 = 800 - ch / 2 + 60
+    p = e_back((lt - 0.05) / 0.55, 1.2)
+    if p <= 0.02:
+        return
+    off = (1 - clamp(p, 0, 1)) * 160
+    card(im, 70, cy0 + off, 940, ch, T, radius=56)
+    d2 = ImageDraw.Draw(im)
+    d2.text((120, cy0 + off + 20), "“", font=font(260), fill=T["accent"], anchor="la")
     for i, ln in enumerate(lines):
-        p = e_out((lt - 0.12 - 0.09 * i) / 0.45)
-        if p <= 0:
+        pp = e_out((lt - 0.2 - 0.09 * i) / 0.45)
+        if pp <= 0:
             continue
         f = font(size)
         space = f.getlength(" ")
-        x = 110 - (1 - p) * 90
-        y = top + i * lh
+        x = 130 - (1 - pp) * 80
+        y = cy0 + off + 230 + i * lh
         for w in ln.split():
             wl = f.getlength(w)
             if accent_match(w, sc.get("accent")):
-                d.rounded_rectangle([x - 14, y - size * 0.62, x + wl + 14, y + size * 0.62],
-                                    radius=int(size * 0.28), fill=P["pill"])
-                d.text((x, y), w, font=f, fill=P["pill_fg"], anchor="lm")
+                d2.rounded_rectangle([x - 14, y - size * 0.6, x + wl + 14, y + size * 0.6],
+                                     radius=int(size * 0.28), fill=T["pill"])
+                d2.text((x, y), w, font=f, fill=T["pill_fg"], anchor="lm")
             else:
-                d.text((x, y), w, font=f, fill=P["fg"], anchor="lm")
+                d2.text((x, y), w, font=f, fill=T["cardfg"], anchor="lm")
             x += wl + space
-    bar = e_out((lt - 0.4) / 0.6)
-    yb = top + len(lines) * lh + 20
-    d.rounded_rectangle([110, yb, 110 + 420 * bar, yb + 16], radius=8, fill=P["accent"])
+    icon = icon_for(sc.get("headline", "") + " " + sc.get("voice", ""))
+    tp = e_back((lt - 0.5) / 0.5)
+    if tp > 0:
+        icon_tile(im, icon, 880, cy0 + off + ch - 20, 150, T["accent"] if T["accent"] != INK else ORANGE,
+                  T["accent2"], scale=clamp(tp, 0, 1.05))
 
 
 def parse_value(v):
@@ -384,11 +559,12 @@ def parse_value(v):
     return v[:m.start()], m.group(0), v[m.end():]
 
 
-def scene_stat(im, d, sc, P, lt, dur):
-    kicker(im, d, sc.get("kicker", DEFAULT_KICKER["stat"]), P, lt, 300)
+def scene_stat(im, d, sc, T, lt, dur):
+    kicker(im, d, sc.get("kicker", DEFAULT_KICKER["stat"]), T, lt, 250)
     value = str(sc.get("value", "")).strip()
     pv = parse_value(value)
-    p = e_out((lt - 0.1) / 1.1)
+    p = e_out((lt - 0.1) / 1.2)
+    pct = 0.78
     if pv:
         pre, raw, suf = pv
         target = float(raw.replace(",", ""))
@@ -396,65 +572,76 @@ def scene_stat(im, d, sc, P, lt, dur):
         cur = target * p
         num = f"{cur:,.{decimals}f}" if "," in raw else f"{cur:.{decimals}f}"
         shown = pre + num + suf
+        if "%" in suf and target <= 100:
+            pct = target / 100.0
     else:
         shown = value
-    size = 360
-    while font(size).getlength(value) > 940 and size > 120:
-        size -= 12
+    R, wd = 300, 40
+    cx, cy = W / 2, 760
+    S = 2
+    box = (R + wd) * 2 + 20
+    ring = Image.new("RGBA", (box * S, box * S), (0, 0, 0, 0))
+    rd = ImageDraw.Draw(ring)
+    bb = [10 * S, 10 * S, (box - 10) * S, (box - 10) * S]
+    track = mix(T["bg0"], T["fg"], 0.16)
+    rd.ellipse(bb, outline=track + (255,), width=wd * S)
+    sweep = 360 * pct * p
+    if sweep > 1:
+        rd.arc(bb, -90, -90 + sweep, fill=T["accent"] + (255,), width=wd * S)
+        a = math.radians(-90 + sweep)
+        rr = (box / 2 - 10 - wd / 2) * S
+        ex, ey = box * S / 2 + rr * math.cos(a), box * S / 2 + rr * math.sin(a)
+        rd.ellipse([ex - wd * S / 2, ey - wd * S / 2, ex + wd * S / 2, ey + wd * S / 2],
+                   fill=T["accent"] + (255,))
+    ring = ring.resize((box, box), Image.LANCZOS)
+    im.paste(ring, (int(cx - box / 2), int(cy - box / 2)), ring)
+    size = 230
+    while font(size).getlength(value) > 470 and size > 70:
+        size -= 8
     pop = e_back((lt - 0.05) / 0.5)
-    d.text((W / 2, 640), shown, font=font(size * clamp(0.6 + 0.4 * pop, 0.6, 1.08)),
-           fill=P["accent"], anchor="mm")
-    ls, llines = fit_text(sc.get("label", ""), 900, 3, [78, 70, 62, 54])
+    d.text((cx, cy - 4), shown, font=font(size * clamp(0.6 + 0.4 * pop, 0.6, 1.06)), fill=T["fg"], anchor="mm")
+    ls, llines = fit_text(sc.get("label", ""), 900, 3, [76, 68, 60, 52])
     for i, ln in enumerate(llines):
         a = e_out((lt - 0.5 - 0.1 * i) / 0.4)
         if a > 0:
-            d.text((W / 2, 860 + i * ls * 1.25 + (1 - a) * 30), ln, font=font(ls),
-                   fill=mix(P["bg0"], P["fg"], a), anchor="mm")
-    prog = e_out((lt - 0.6) / 1.4)
-    pts, n = [], 40
-    for i in range(n + 1):
-        x = 130 + (W - 260) * i / n
-        v_ = (i / n) ** 2.2 + 0.05 * math.sin(i * 0.9)
-        pts.append((x, 1290 - 240 * v_))
-    k = int(len(pts) * prog)
-    if k >= 2:
-        d.line(pts[:k], fill=P["accent"], width=14, joint="curve")
-        ex, ey = pts[k - 1]
-        r = 18 + 5 * math.sin(lt * 8)
-        d.ellipse([ex - r, ey - r, ex + r, ey + r], fill=(255, 255, 255))
+            d.text((W / 2, 1180 + i * ls * 1.25 + (1 - a) * 30), ln, font=font(ls),
+                   fill=mix(T["bg0"], T["fg"], a), anchor="mm")
 
 
-def scene_cards(im, d, sc, P, lt, dur):
-    kicker(im, d, sc.get("kicker", DEFAULT_KICKER["cards"]), P, lt, 230)
+def scene_cards(im, d, sc, T, lt, dur):
+    kicker(im, d, sc.get("kicker", DEFAULT_KICKER["cards"]), T, lt, 220)
     hs, hl = fit_text(sc.get("heading", ""), 900, 2, [88, 78, 70])
     for i, ln in enumerate(hl):
         a = e_out((lt - 0.05 * i) / 0.45)
-        d.text((W / 2, 420 + i * hs * 1.2 + (1 - a) * 40), ln, font=font(hs), fill=P["fg"], anchor="mm")
+        d.text((W / 2, 420 + i * hs * 1.2 + (1 - a) * 40), ln, font=font(hs), fill=T["fg"], anchor="mm")
+    ub = e_out((lt - 0.2) / 0.5)
+    ybar = 420 + len(hl) * hs * 1.2 - 10
+    d.rounded_rectangle([W / 2 - 90 * ub, ybar, W / 2 + 90 * ub, ybar + 12], radius=6, fill=T["accent"])
     items = [str(x) for x in sc.get("items", [])][:3]
     ch, gap = 215, 30
-    y0 = 530 if len(hl) == 1 else 590
+    y0 = 560 if len(hl) == 1 else 620
     for i, it in enumerate(items):
         p = e_back((lt - 0.25 - 0.22 * i) / 0.55, 1.4)
         if p <= 0.02:
             continue
         y = y0 + i * (ch + gap) + (1 - clamp(p, 0, 1)) * 220
-        card(im, 80, y, 880, ch, P["card"])
-        d2 = ImageDraw.Draw(im)
-        d2.ellipse([125, y + ch / 2 - 48, 221, y + ch / 2 + 48], fill=P["pill"])
-        d2.text((173, y + ch / 2), str(i + 1), font=font(56), fill=P["pill_fg"], anchor="mm")
+        card(im, 80, y, 920, ch, T, radius=46)
+        c0 = T["accent"] if T["accent"] != INK else ORANGE
+        icon_tile(im, icon_for(it), 190, y + ch / 2, 120, c0, T["accent2"], scale=clamp(p, 0.3, 1.04), shadow=False)
         s, lines = fit_text(it, 600, 3, [48, 44, 40, 36])
         lh = s * 1.22
+        d2 = ImageDraw.Draw(im)
         for j, ln in enumerate(lines):
-            d2.text((265, y + ch / 2 - (len(lines) - 1) * lh / 2 + j * lh), ln, font=font(s),
-                    fill=INK, anchor="lm")
+            d2.text((300, y + ch / 2 - (len(lines) - 1) * lh / 2 + j * lh), ln, font=font(s),
+                    fill=T["cardfg"], anchor="lm")
 
 
-def scene_cta(im, d, sc, P, lt, dur):
+def scene_cta(im, d, sc, T, lt, dur):
     size, lines = fit_text(sc.get("headline", "Follow for daily tech news"), 900, 3, [124, 110, 96])
     for i, ln in enumerate(lines):
         p = e_back((lt - 0.1 * i) / 0.5)
         d.text((W / 2, 560 + i * size * 1.2), ln, font=font(size * clamp(0.5 + 0.5 * p, 0.5, 1.1)),
-               fill=P["fg"], anchor="mm")
+               fill=T["fg"], anchor="mm")
     p = e_back((lt - 0.5) / 0.5)
     pulse = 1 + 0.04 * math.sin(lt * 7)
     bw, bh = 700 * pulse * clamp(p, 0, 1.05), 170 * pulse * clamp(p, 0, 1.05)
@@ -462,7 +649,7 @@ def scene_cta(im, d, sc, P, lt, dur):
     if p > 0:
         d.rounded_rectangle([W / 2 - bw / 2, cy - bh / 2, W / 2 + bw / 2, cy + bh / 2], radius=60, fill=RED)
         d.text((W / 2, cy), "SUBSCRIBE", font=font(72 * clamp(p, 0.3, 1)), fill=(255, 255, 255), anchor="mm")
-    d.text((W / 2, cy + 180), CHANNEL, font=font(52), fill=P["accent"] if P["accent"] != INK else P["fg"],
+    d.text((W / 2, cy + 180), CHANNEL, font=font(52), fill=T["accent"] if T["accent"] != INK else T["fg"],
            anchor="mm")
 
 
@@ -471,10 +658,10 @@ SCENES = {"hook": scene_hook, "statement": scene_statement, "stat": scene_stat,
 
 
 def render_scene(sc, lt, dur, t_abs):
-    pal = sc["_pal"]
-    im = background(pal, sc["_style"], t_abs, sc["_seed"])
+    th = sc["_pal"]
+    im = background(th, sc["_style"], t_abs, sc["_seed"])
     d = ImageDraw.Draw(im)
-    SCENES[sc["type"]](im, d, sc, PALETTES[pal], lt, dur)
+    SCENES[sc["type"]](im, d, sc, THEMES[th], lt, dur)
     return im
 
 
@@ -483,11 +670,13 @@ def render_scene(sc, lt, dur, t_abs):
 CAP_CY = 1470  # safe zone: above the Shorts UI (channel name / buttons)
 
 
-def draw_chrome(im, t, full, chunks, pal):
+def draw_chrome(im, t, full, chunks, th):
     d = ImageDraw.Draw(im)
-    P = PALETTES[pal]
-    d.ellipse([60, 152, 84, 176], fill=RED)
-    d.text((100, 164), CHANNEL, font=font(34), fill=P["sub"], anchor="lm")
+    T = THEMES[th]
+    d.rounded_rectangle([60, 130, 112, 182], radius=14, fill=ORANGE)
+    g = glyph("bolt", 30, (255, 255, 255))
+    im.paste(g, (71, 141), g)
+    d.text((130, 156), CHANNEL, font=font(32), fill=T["sub"], anchor="lm")
     d.rectangle([0, 0, W * clamp(t / full), 10], fill=ORANGE)
     cur = None
     for c in chunks:
@@ -518,30 +707,46 @@ def draw_chrome(im, t, full, chunks, pal):
 SR = 44100
 
 
-def _env_exp(n, rate):
-    return np.exp(-np.arange(n) / SR * rate)
+def _reverb(sig, seed, wet_len=1.1, decay=4.2):
+    n = int(wet_len * SR)
+    rs = np.random.RandomState(seed)
+    ir = rs.randn(n) * np.exp(-np.arange(n) / SR * decay)
+    ir[: int(0.012 * SR)] *= np.linspace(0, 1, int(0.012 * SR))
+    size = 1
+    while size < len(sig) + n:
+        size *= 2
+    out = np.fft.irfft(np.fft.rfft(sig, size) * np.fft.rfft(ir, size), size)[: len(sig)]
+    return out / (np.max(np.abs(out)) + 1e-9) * (np.max(np.abs(sig)) + 1e-9)
 
 
 def synth_music(length, seed):
+    """Stereo lo-fi/electronic bed: pad + pluck arp (reverb), bass, kick, hats, kick-pump."""
     import random
     rng = random.Random(seed)
-    bpm = rng.choice([88, 92, 96, 100])
+    bpm = rng.choice([92, 96, 100, 104])
     beat = 60.0 / bpm
     bar = beat * 4
     progs = [
-        [[57, 60, 64, 67], [53, 57, 60, 64], [60, 64, 67, 71], [55, 59, 62, 67]],   # Am7 Fmaj7 Cmaj7 G
-        [[60, 64, 67, 72], [55, 59, 62, 67], [57, 60, 64, 69], [53, 57, 60, 65]],   # C G Am F
-        [[62, 65, 69, 72], [58, 62, 65, 70], [53, 57, 60, 65], [60, 64, 67, 72]],   # Dm7 Bb F C
+        [[57, 60, 64, 67], [53, 57, 60, 64], [60, 64, 67, 71], [55, 59, 62, 67]],
+        [[60, 64, 67, 72], [55, 59, 62, 67], [57, 60, 64, 69], [53, 57, 60, 65]],
+        [[62, 65, 69, 72], [58, 62, 65, 70], [53, 57, 60, 65], [60, 64, 67, 72]],
+        [[52, 55, 59, 62], [48, 52, 55, 59], [55, 59, 62, 66], [50, 54, 57, 62]],
     ]
     prog = rng.choice(progs)
-    out = np.zeros(int(length * SR) + SR)
+    N = int(length * SR) + SR
+    pad = np.zeros((N, 2))
+    pluck = np.zeros((N, 2))
+    dry = np.zeros((N, 2))
+    kicks = []
 
-    def add(sig, t):
+    def add(buf, sig, t, pan=0.5):
         i = int(t * SR)
-        if i >= len(out):
+        if i >= N:
             return
-        j = min(len(out), i + len(sig))
-        out[i:j] += sig[: j - i]
+        j = min(N, i + len(sig))
+        s = sig[: j - i]
+        buf[i:j, 0] += s * (1 - pan) * 1.4
+        buf[i:j, 1] += s * pan * 1.4
 
     def f(m):
         return 440.0 * 2 ** ((m - 69) / 12.0)
@@ -552,41 +757,55 @@ def synth_music(length, seed):
         chord = prog[b % 4]
         n = int(bar * SR)
         tt = np.arange(n) / SR
-        env = np.minimum(1, tt / 0.35) * np.minimum(1, (bar - tt) / 0.3 + 0.0).clip(0, 1)
-        pad = np.zeros(n)
-        for m in chord:
-            fr = f(m)
-            pad += np.sin(2 * np.pi * fr * tt) + 0.5 * np.sin(2 * np.pi * fr * 1.004 * tt) \
-                + 0.25 * np.sin(2 * np.pi * 2 * fr * tt)
-        add(pad * env * 0.045, t0)
+        env = np.minimum(1, tt / 0.4) * np.clip((bar - tt) / 0.35, 0, 1)
+        for ch_i in (0, 1):
+            sig = np.zeros(n)
+            for m in chord:
+                fr = f(m) * (1.0045 if ch_i == 0 else 0.9955)
+                sig += np.sin(2 * np.pi * fr * tt) + 0.35 * np.sin(2 * np.pi * 2 * fr * tt) \
+                    + 0.15 * np.sin(2 * np.pi * 3 * fr * tt)
+            i = int(t0 * SR)
+            if i < N:
+                j = min(N, i + n)
+                pad[i:j, ch_i] += (sig * env * 0.05)[: j - i]
         root = f(chord[0] - 24)
-        for k, pos in enumerate((0, 2, 2.75)):
-            nn = int(beat * 1.6 * SR)
+        for k, (pos, amp) in enumerate(((0, 0.26), (1.5, 0.14), (2.5, 0.2), (3.25, 0.12))):
+            nn = int(beat * 1.3 * SR)
             tb = np.arange(nn) / SR
-            bass = np.sin(2 * np.pi * root * tb) * np.exp(-tb * 2.6) * (0.26 if k < 2 else 0.16)
-            add(bass, t0 + pos * beat)
-        for pos in (0, 2):
-            nn = int(0.32 * SR)
-            tk = np.arange(nn) / SR
-            phase = 2 * np.pi * np.cumsum(46 + 95 * np.exp(-tk * 32)) / SR
-            add(np.sin(phase) * np.exp(-tk * 9) * 0.36, t0 + pos * beat)
+            bass = (np.sin(2 * np.pi * root * tb) + 0.2 * np.sin(2 * np.pi * 2 * root * tb)) \
+                * np.exp(-tb * 3.2) * amp
+            add(dry, bass, t0 + pos * beat, 0.5)
+        for pos in (0, 1, 2, 3):
+            tk = np.arange(int(0.3 * SR)) / SR
+            phase = 2 * np.pi * np.cumsum(48 + 100 * np.exp(-tk * 30)) / SR
+            add(dry, np.sin(phase) * np.exp(-tk * 9) * (0.34 if pos % 2 == 0 else 0.2), t0 + pos * beat, 0.5)
+            kicks.append(t0 + pos * beat)
         noise = np.random.RandomState(b).randn(int(0.05 * SR))
         hat = np.diff(noise, prepend=0) * np.exp(-np.arange(len(noise)) / SR * 110) * 0.6
         for pos in range(1, 8, 2):
-            add(hat * 0.05, t0 + pos * beat / 2)
-        arp = [chord[0] + 12, chord[1] + 12, chord[2] + 12, chord[3] + 12, chord[2] + 12, chord[1] + 12, chord[3] + 12, chord[2] + 12]
+            add(dry, hat * 0.05, t0 + pos * beat / 2, 0.55)
+        arp = [chord[0], chord[1], chord[2], chord[3], chord[2], chord[1], chord[3], chord[2]]
         for k in range(8):
-            nn = int(0.45 * SR)
-            tp = np.arange(nn) / SR
-            fr = f(arp[k] + 12)
-            pl = (np.sin(2 * np.pi * fr * tp) + 0.3 * np.sin(2 * np.pi * 2 * fr * tp)) * np.exp(-tp * 7)
-            add(pl * 0.075, t0 + k * beat / 2)
+            tp = np.arange(int(0.5 * SR)) / SR
+            fr = f(arp[k] + 24)
+            pl = (np.sin(2 * np.pi * fr * tp) + 0.3 * np.sin(2 * np.pi * 2 * fr * tp)) * np.exp(-tp * 6.5)
+            add(pluck, pl * 0.08, t0 + k * beat / 2, 0.3 if k % 2 else 0.7)
+    pump = np.ones(N)
+    for kt in kicks[::2]:
+        i = int(kt * SR)
+        seg = min(N - i, int(0.3 * SR))
+        if seg > 0:
+            pump[i:i + seg] *= 1 - 0.45 * np.exp(-np.arange(seg) / SR * 9)
+    pad *= pump[:, None]
+    bus = pad + pluck
+    wet = np.stack([_reverb(bus[:, 0], 11), _reverb(bus[:, 1], 23)], axis=1)
+    out = dry + pad + pluck + wet * 0.55
     out = out[: int(length * SR)]
     fade = np.ones(len(out))
     fi, fo = int(1.2 * SR), int(2.0 * SR)
     fade[:fi] = np.linspace(0, 1, fi)
     fade[-fo:] = np.linspace(1, 0, fo)
-    out *= fade
+    out *= fade[:, None]
     return out / (np.max(np.abs(out)) + 1e-9)
 
 
@@ -596,12 +815,11 @@ def sfx_whoosh(dur=0.6):
     y = np.zeros(n)
     p1 = p2 = 0.0
     for i in range(n):
-        a = 0.004 + 0.07 * math.sin(math.pi * i / n) ** 2   # soft sweep, low cutoff
+        a = 0.004 + 0.07 * math.sin(math.pi * i / n) ** 2
         p1 += a * (x[i] - p1)
         p2 += a * (p1 - p2)
         y[i] = p2
-    env = np.sin(np.pi * np.arange(n) / n) ** 2
-    y = y * env
+    y = y * np.sin(np.pi * np.arange(n) / n) ** 2
     return y / (np.max(np.abs(y)) + 1e-9) * 0.5
 
 
@@ -635,6 +853,12 @@ def sfx_ding(freqs=(1318.5,), gap=0.0):
     return out
 
 
+def sfx_tick():
+    n = int(0.04 * SR)
+    t = np.arange(n) / SR
+    return np.sin(2 * np.pi * 1900 * t) * np.exp(-t * 130) * 0.5
+
+
 def decode_voice(path):
     raw = subprocess.run(["ffmpeg", "-v", "error", "-i", path, "-ac", "1", "-ar", str(SR), "-f", "f32le", "-"],
                          capture_output=True, check=True).stdout
@@ -653,36 +877,35 @@ def build_audio_mix(voice_path, full, events, seed, out_path):
     N = int((full + 0.5) * SR)
     v = np.zeros(N)
     v[: min(N, len(voice))] = voice[:N]
-    pk = np.max(np.abs(v)) or 1.0
-    v = v / pk * 0.85
-    mix_ = v.copy()
+    v = v / (np.max(np.abs(v)) or 1.0) * 0.85
+    mix_ = np.stack([v, v], axis=1)
 
     if os.environ.get("MUSIC", "1") != "0":
         music = synth_music(N / SR, seed)
-        env = smooth(np.abs(v), 0.08)
-        ref = np.percentile(env, 95) or 1.0
-        duck = 1.0 - 0.68 * smooth(np.clip(env / ref, 0, 1), 0.3)
-        mix_ += music[:N] * duck * 0.30
+        mono_env = smooth(np.abs(v), 0.08)
+        ref = np.percentile(mono_env, 95) or 1.0
+        duck = 1.0 - 0.7 * smooth(np.clip(mono_env / ref, 0, 1), 0.3)
+        mix_ += music[:N] * (duck * 0.32)[:, None]
 
-    lib = {"whoosh": sfx_whoosh(), "pop": sfx_pop(), "thump": sfx_thump(), "rise": sfx_rise(),
-           "ding": sfx_ding(), "chime": sfx_ding((1046.5, 1318.5, 1568.0), 0.09)}
+    lib = {"whoosh": (sfx_whoosh(), 0.7), "pop": (sfx_pop(), 0.7), "thump": (sfx_thump(), 0.7),
+           "rise": (sfx_rise(), 0.7), "ding": (sfx_ding(), 0.7),
+           "chime": (sfx_ding((1046.5, 1318.5, 1568.0), 0.09), 0.7), "tick": (sfx_tick(), 0.22)}
     for kind, t in events:
-        s = lib[kind]
+        s, g = lib[kind]
         i = int(max(0.0, t) * SR)
         j = min(N, i + len(s))
         if i < N:
-            mix_[i:j] += s[: j - i] * 0.7
+            mix_[i:j, :] += (s[: j - i] * g)[:, None]
 
     pk = np.max(np.abs(mix_))
     if pk > 0.9:
         mix_ *= 0.9 / pk
     pcm = (np.clip(mix_, -1, 1) * 32767).astype("<i2")
-    st = np.repeat(pcm[:, None], 2, axis=1)
     with wave.open(out_path, "wb") as w:
         w.setnchannels(2)
         w.setsampwidth(2)
         w.setframerate(SR)
-        w.writeframes(st.tobytes())
+        w.writeframes(pcm.tobytes())
 
 
 # ------------------------------------------------------------------ script -> scenes
@@ -715,13 +938,21 @@ def prepare_scenes(data):
         scenes = fallback_scenes(data)
     seed = datetime.date.today().toordinal() * 31 + sum(map(ord, data.get("title", "x")))
     rng = random.Random(seed)
-    pal_names = list(PALETTES)
-    prev_pal, prev_style = None, None
+    prefer = {"hook": "sun", "stat": "dark", "cards": "cream", "cta": "dark"}
+    ctx = " ".join(s.get("voice", "") for s in scenes) + " " + " ".join(data.get("keywords", []))
+    prev_th, prev_decor, st_alt = None, None, 0
     for i, s in enumerate(scenes):
-        pal = rng.choice([p for p in pal_names if p != prev_pal])
-        style = rng.choice([x for x in STYLES if x != prev_style])
-        s["_pal"], s["_style"], s["_seed"] = pal, style, rng.randint(0, 9)
-        prev_pal, prev_style = pal, style
+        th = prefer.get(s["type"])
+        if th is None:
+            th = "cream" if st_alt % 2 else "dark"
+            st_alt += 1
+        if th == prev_th:
+            th = rng.choice([x for x in THEMES if x != prev_th])
+        decor = rng.choice([x for x in DECORS if x != prev_decor])
+        s["_pal"], s["_style"], s["_seed"] = th, decor, rng.randint(0, 9)
+        s["_title"] = data.get("title", "")
+        s["_context"] = ctx
+        prev_th, prev_decor = th, decor
     return scenes
 
 
@@ -781,6 +1012,7 @@ def main():
             canvas.paste(nxt, (int(W * (1 - p)), 0))
             cur = canvas
             th = n["_pal"] if p > 0.5 else th
+        cur = add_grain(cur)
         draw_chrome(cur, t, full, chunks, th)
         return cur
 
@@ -799,6 +1031,8 @@ def main():
             events.append(("ding", t0 + 1.15))
         elif s["type"] == "cta":
             events.append(("chime", t0 + 0.55))
+    for c in chunks:
+        events.append(("tick", c["t0"]))
     seed = sum(map(ord, data.get("title", "x"))) % 997
     print("mixing audio...")
     build_audio_mix(audio, full, events, seed, f"{OUT}/mix.wav")
