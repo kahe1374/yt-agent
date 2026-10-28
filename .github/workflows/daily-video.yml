@@ -27,7 +27,6 @@ jobs:
       - name: Write script and narration
         env:
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-          MODELS: ${{ vars.MODELS }}
         run: python main.py
 
       - name: Render video
