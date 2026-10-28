@@ -38,7 +38,7 @@ OUTPUT: one valid JSON object, nothing else, no code fences:
     {"type":"hook","headline":"3-6 word punchy headline","accent":"one word taken from the headline","voice":"the spoken sentence(s)"},
     {"type":"stat","value":"a number from the text, e.g. $2,000 or 12 million","label":"max 8 words saying what the number is","voice":"spoken sentence(s)"},
     {"type":"cards","heading":"max 5 words","items":["fact 1 (max 9 words)","fact 2","fact 3"],"voice":"spoken sentence(s)"},
-    {"type":"statement","headline":"5-9 word takeaway","accent":"one word from the headline","voice":"spoken sentence(s)"},
+    {"type":"statement","headline":"a complete grammatical sentence of 5-9 words, readable on its own (never a fragment like \"Weigh Upgrade Needs\")","accent":"one word from the headline","voice":"spoken sentence(s)"},
     {"type":"cta","headline":"Follow for daily tech news","voice":"one short outro sentence, max 12 words"}
   ]
 }
