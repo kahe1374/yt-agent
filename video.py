@@ -111,7 +111,7 @@ def build_words(tokens, t_start, t_end):
     return out
 
 
-def make_chunks(words, fnt, max_w=860, max_words=4):
+def make_chunks(words, fnt, max_w=740, max_words=3):
     chunks, cur = [], []
     for item in words:
         cur.append(item)
