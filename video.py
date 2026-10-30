@@ -5,6 +5,7 @@ import os
 import re
 import subprocess
 import textwrap
+import time
 import wave
 
 import numpy as np
@@ -1029,9 +1030,100 @@ for _k in ("hook", "statement", "cards"):
     SCENES[_k] = _wrap_scene(_k)
 
 
+
+# ------------------------------------------------------------------ AI photo backgrounds (Pollinations)
+
+SHOTS = ["extreme close-up macro shot", "wide cinematic establishing shot", "dramatic studio product shot",
+         "moody futuristic scene", "aerial view", "low angle hero shot"]
+_ai = {}
+
+
+def fetch_ai_image(prompt, path, seed):
+    import urllib.parse
+    import urllib.request
+    key = os.environ.get("POLLINATIONS_API_KEY", "")
+    if not key:
+        return False
+    url = ("https://gen.pollinations.ai/image/" + urllib.parse.quote(prompt) +
+           f"?width=1080&height=1920&nologo=true&seed={seed}&key={key}")
+    for attempt in range(3):
+        try:
+            req = urllib.request.Request(url, headers={"Authorization": "Bearer " + key, "User-Agent": "Mozilla/5.0"})
+            with urllib.request.urlopen(req, timeout=120) as r:
+                data = r.read()
+            if len(data) < 20000:
+                raise RuntimeError("tiny response")
+            with open(path, "wb") as f:
+                f.write(data)
+            Image.open(path).convert("RGB").load()
+            return True
+        except Exception as e:  # noqa
+            print("image fetch failed:", type(e).__name__, str(e)[:80])
+            time.sleep(4)
+    return False
+
+
+def attach_images(scenes, data, seed):
+    """Generate topic-matched photos; scenes without a photo keep the animated graphic background."""
+    if not os.environ.get("POLLINATIONS_API_KEY"):
+        print("no image key -> graphic backgrounds")
+        return False
+    import random
+    from concurrent.futures import ThreadPoolExecutor
+    rng = random.Random(seed)
+    subject = data.get("title", "technology news")
+    kws = ", ".join(data.get("keywords", [])[:3])
+    n = min(4, len(scenes))
+    shots = rng.sample(SHOTS, n)
+    jobs = []
+    for k in range(n):
+        p = (f"{shots[k]} of {subject}, {kws}, photorealistic, cinematic lighting, shallow depth of field, "
+             "vertical composition, no text, no letters, no logos, no watermark")
+        jobs.append((p, f"{OUT}/ai_{k}.jpg", seed + k))
+    os.makedirs(OUT, exist_ok=True)
+    with ThreadPoolExecutor(max_workers=2) as ex:
+        res = list(ex.map(lambda j: fetch_ai_image(*j), jobs))
+    ok = [k for k in range(n) if res[k]]
+    print("ai images ok:", ok)
+    if not ok:
+        return False
+    for i, sc in enumerate(scenes):
+        k = i * n // len(scenes)
+        if k not in ok:
+            k = ok[i % len(ok)]
+        sc["_img"] = f"{OUT}/ai_{k}.jpg"
+        sc["_pal"] = "dark"
+    return True
+
+
+def photo_bg(sc, lt, dur):
+    path = sc["_img"]
+    if path not in _ai:
+        im = Image.open(path).convert("RGB")
+        sc_ = max(W * 1.25 / im.size[0], H * 1.25 / im.size[1])
+        _ai[path] = im.resize((int(im.size[0] * sc_), int(im.size[1] * sc_)), Image.LANCZOS)
+    big = _ai[path]
+    p = clamp(lt / max(dur, 0.1))
+    z = 1.0 - 0.14 * e_out(p) if sc["_seed"] % 2 else 0.86 + 0.14 * e_out(p)
+    cw, ch = W * 1.25 * z, H * 1.25 * z
+    cw, ch = min(cw, big.size[0]), min(ch, big.size[1])
+    ox = (big.size[0] - cw) / 2 + (sc["_seed"] % 3 - 1) * 40 * p
+    oy = (big.size[1] - ch) / 2
+    im = big.crop((int(ox), int(oy), int(ox + cw), int(oy + ch))).resize((W, H), Image.BILINEAR)
+    if "shade" not in _ai:
+        sh = Image.new("L", (W, H))
+        dd = ImageDraw.Draw(sh)
+        for y in range(H):
+            v = 0.50 + 0.28 * (y / H) ** 1.6 + 0.10 * math.exp(-((y - 1470) / 260.0) ** 2)
+            dd.line([(0, y), (W, y)], fill=int(255 * min(v, 0.85)))
+        _ai["shade"] = sh
+    im = Image.composite(Image.new("RGB", (W, H), (8, 6, 16)), im, _ai["shade"])
+    return im
+
+
 def render_scene(sc, lt, dur, t_abs):
     th = sc["_pal"]
-    im = background(th, sc["_style"], t_abs, sc["_seed"])
+    im = photo_bg(sc, lt, dur) if sc.get("_img") else background(th, sc["_style"], t_abs, sc["_seed"])
     d = ImageDraw.Draw(im)
     SCENES[sc["type"]](im, d, sc, THEMES[th], lt, dur)
     return im
@@ -1375,6 +1467,8 @@ def prepare_scenes(data):
         s["_title"] = data.get("title", "")
         s["_context"] = ctx
         prev_th, prev_decor = th, decor
+    if attach_images(scenes, data, seed):
+        HUE["deg"] = 0
     return scenes
 
 
