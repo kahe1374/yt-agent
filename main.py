@@ -10,8 +10,7 @@ import feedparser
 import requests
 
 NEWS_URL = "https://news.google.com/rss/headlines/section/topic/TECHNOLOGY?hl=en-US&gl=US&ceid=US:en"
-MODELS = [m.strip() for m in os.environ.get(
-    "MODELS", "google/gemma-4-26b-a4b-it:free,google/gemma-4-31b-it:free,openrouter/free"
+MODELS = [m.strip() for m in (os.environ.get("MODELS") or "google/gemma-4-26b-a4b-it:free,google/gemma-4-31b-it:free,openrouter/free"
 ).split(",") if m.strip()]
 API_KEY = os.environ["OPENROUTER_API_KEY"]
 VOICE = os.environ.get("VOICE", "en-US-AriaNeural")
@@ -142,7 +141,19 @@ def validate(data, source_text):
     }
 
 
+STRUCTURES = [
+    "hook, statement, statement, cards, cta",
+    "hook, cards, statement, statement, statement, cta",
+    "hook, statement, stat (only if a real number exists), statement, cards, cta",
+    "hook, statement, cards, stat (only if a real number exists), statement, cta",
+    "hook, statement, statement, statement, cta",
+    "hook, stat (only if a real number exists), cards, statement, statement, cta",
+]
+
+
 def write_script(news_text, source_text):
+    import random
+    news_text = news_text + "\n\nSCENE ORDER FOR THIS VIDEO (follow it, skip stat if no real number): " + random.choice(STRUCTURES)
     last = None
     for attempt in range(6):
         model = MODELS[attempt % len(MODELS)]
