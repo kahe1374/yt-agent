@@ -1349,7 +1349,7 @@ def prepare_scenes(data):
     names = list(THEMES)
     rng.shuffle(names)
     prefer = {"hook": names[0], "stat": names[1], "cards": names[2], "cta": names[1]}
-    HUE["deg"] = rng.choice([0, 0, 28, 62, 110, 150, 185, 215, 250, 285, 320, 345])
+    HUE["deg"] = rng.choice([0, 0, 150, 185, 215, 250, 285, 320, 345])
     print("hue shift:", HUE["deg"])
     LAYOUT.update(cap=rng.randint(0, 2), trans=rng.randint(0, 3), hook=0, cards=0,
                   card=rng.randint(0, 3), news=rng.randint(0, 2), stat=rng.randint(0, 2), quote=rng.randint(0, 2),
