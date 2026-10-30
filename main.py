@@ -12,6 +12,7 @@ import requests
 NEWS_URL = "https://news.google.com/rss/headlines/section/topic/TECHNOLOGY?hl=en-US&gl=US&ceid=US:en"
 MODELS = [m.strip() for m in (os.environ.get("MODELS") or "google/gemma-4-26b-a4b-it:free,google/gemma-4-31b-it:free,openrouter/free"
 ).split(",") if m.strip()]
+EXTRA_MODELS = ["meta-llama/llama-3.3-70b-instruct:free", "qwen/qwen3-235b-a22b:free", "deepseek/deepseek-chat-v3.1:free"]
 API_KEY = os.environ["OPENROUTER_API_KEY"]
 VOICE = os.environ.get("VOICE", "en-US-AriaNeural")
 RATE = os.environ.get("RATE", "+0%")
@@ -151,12 +152,50 @@ STRUCTURES = [
 ]
 
 
-def write_script(news_text, source_text):
+def _clean(t):
+    t = normalize(t).encode("ascii", "ignore").decode()
+    return re.sub(r"\s+-\s+[^-]{2,40}$", "", t).strip()
+
+
+def fallback_script(items, focus):
+    """Rule-based script (no AI) used when every free model fails."""
+    title, src, summ = items[focus]
+    t0 = _clean(title)
+    words = t0.split()
+    head = ""
+    for w_ in words[:7]:
+        if len(head) + len(w_) > 40 and head:
+            break
+        head = (head + " " + w_).strip()
+    accent = max(head.split(), key=len) if head else ""
+    accent = re.sub(r"\W", "", accent)
+    others = [_clean(i[0]) for k, i in enumerate(items) if k != focus][:3]
+    scenes = [{"type": "hook", "headline": head, "accent": accent,
+               "voice": f"Here is a tech story you should know about today. {t0}."}]
+    s1 = _clean(summ) or t0
+    scenes.append({"type": "statement", "headline": " ".join(s1.split()[:9]).rstrip(".,"),
+                   "accent": re.sub(r"\W", "", max(s1.split()[:9], key=len, default="")),
+                   "voice": s1 if s1.endswith(".") else s1 + "."})
+    for o in others:
+        w = o.split()
+        scenes.append({"type": "statement", "headline": " ".join(w[:9]),
+                       "accent": re.sub(r"\W", "", max(w[:9], key=len, default="")),
+                       "voice": f"Also in the news today. {o}."})
+    scenes.append({"type": "cta", "headline": "Follow for daily tech news",
+                   "voice": "Follow Trend Pulse Daily for tech news every day."})
+    narration = " ".join(s["voice"] for s in scenes)
+    return {"title": t0[:90] or "Today in tech", "description": f"Today's tech headlines. Source: {src}.",
+            "keywords": [accent] if accent else [], "tags": ["tech news", "technology", "shorts"],
+            "narration": narration, "scenes": scenes}
+
+
+def write_script(news_text, source_text, items=None, focus=0):
     import random
     news_text = news_text + "\n\nSCENE ORDER FOR THIS VIDEO (follow it, skip stat if no real number): " + random.choice(STRUCTURES)
     last = None
-    for attempt in range(6):
-        model = MODELS[attempt % len(MODELS)]
+    models = MODELS + [m for m in EXTRA_MODELS if m not in MODELS]
+    for attempt in range(10):
+        model = models[attempt % len(models)]
         try:
             r = requests.post(
                 "https://openrouter.ai/api/v1/chat/completions",
@@ -164,19 +203,24 @@ def write_script(news_text, source_text):
                 json={"model": model, "temperature": 0.5,
                       "messages": [{"role": "system", "content": SYSTEM_PROMPT},
                                    {"role": "user", "content": news_text}]},
-                timeout=150,
+                timeout=90,
             )
             if r.status_code != 200:
                 raise RuntimeError(f"{model}: HTTP {r.status_code} {r.text[:120]}")
             raw = r.json()["choices"][0]["message"]["content"] or ""
             clean = re.sub(r"```json|```", "", raw).strip()
             s, e = clean.find("{"), clean.rfind("}")
+            if s < 0 or e < 0:
+                raise ValueError(f"{model}: no JSON in reply ({raw[:80]!r})")
             data = json.loads(clean[s:e + 1])
             return validate(data, source_text)
         except Exception as ex:  # noqa: BLE001
             last = ex
             print(f"attempt {attempt + 1} failed ({model}): {ex}")
-            time.sleep(15)
+            time.sleep(4)
+    if items:
+        print("all models failed; using rule-based fallback script:", last)
+        return fallback_script(items, focus)
     raise RuntimeError(f"script generation failed: {last}")
 
 
@@ -188,9 +232,10 @@ def main():
     os.makedirs(OUT, exist_ok=True)
     items = get_news()
     news_text, focus_title = news_prompt(items)
+    focus_idx = [i[0] for i in items].index(focus_title)
     print("focus:", focus_title)
     source_text = " ".join(f"{t} {s} {m}" for t, s, m in items)
-    data = write_script(news_text, source_text)
+    data = write_script(news_text, source_text, items, focus_idx)
     with open(f"{OUT}/script.json", "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
     asyncio.run(make_audio(data["narration"], f"{OUT}/narration.mp3"))
