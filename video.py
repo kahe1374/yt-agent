@@ -166,7 +166,7 @@ THEMES = {
                 pill=INK, pill_fg=(255, 255, 255)),
 }
 HUE = {"deg": 0.0}
-LAYOUT = {"cap": 0, "trans": 0, "hook": 0, "cards": 0, "card": 0, "news": 0, "stat": 0, "quote": 0, "align": 0, "kick": 0, "brand": 0}
+LAYOUT = {"cap": 0, "trans": 0, "hook": 0, "cards": 0, "card": 0, "news": 0, "stat": 0, "quote": 0, "align": 0, "kick": 0, "brand": 0, "family": 0}
 
 
 def hue_rotate(im, deg):
@@ -776,6 +776,259 @@ SCENES = {"hook": scene_hook, "statement": scene_statement, "stat": scene_stat,
           "cards": scene_cards, "cta": scene_cta}
 
 
+# ------------------------------------------------------------------ design families (poster / terminal)
+
+MONO = "/usr/share/fonts/truetype/dejavu/DejaVuSansMono-Bold.ttf"
+_mf = {}
+
+
+def mfont(size):
+    s = int(size)
+    if s not in _mf:
+        try:
+            _mf[s] = ImageFont.truetype(MONO, s)
+        except Exception:  # noqa: BLE001
+            _mf[s] = font(s)
+    return _mf[s]
+
+
+def wrap_font(text, f, maxw):
+    lines, cur = [], ""
+    for w in text.split():
+        t = (cur + " " + w).strip()
+        if f.getlength(t) <= maxw or not cur:
+            cur = t
+        else:
+            lines.append(cur)
+            cur = w
+    if cur:
+        lines.append(cur)
+    return lines
+
+
+def pick_size(text, sizes, maxw, maxlines, maxh, mono=False, lhk=1.18):
+    for s in sizes:
+        f = mfont(s) if mono else font(s)
+        lines = wrap_font(text, f, maxw)
+        if len(lines) <= maxlines and len(lines) * s * lhk <= maxh:
+            return s, lines
+    s = sizes[-1]
+    f = mfont(s) if mono else font(s)
+    return s, wrap_font(text, f, maxw)[:maxlines]
+
+
+def _c0(T):
+    return T["accent"] if T["accent"] != INK else ORANGE
+
+
+def poster_panel(im, T, lt, top, bot, slant=90):
+    p = e_out(lt / 0.5)
+    ov = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    od = ImageDraw.Draw(ov)
+    dx = -W * (1 - p)
+    c0 = _c0(T)
+    od.polygon([(dx, top), (W + dx, top - slant), (W + dx, bot), (dx, bot + slant)], fill=c0 + (255,))
+    sh = Image.new("L", (W, H), 0)
+    ImageDraw.Draw(sh).polygon([(dx, top + 20), (W + dx, top - slant + 20), (W + dx, bot + 28), (dx, bot + slant + 28)], fill=90)
+    sh = sh.filter(ImageFilter.GaussianBlur(22))
+    im.paste(Image.new("RGB", (W, H), (20, 8, 20)), (0, 0), sh)
+    im.paste(ov, (0, 0), ov)
+    return c0
+
+
+def draw_rich_line(d, line, accent, x, y, f, fg, pill, pill_fg, size, mono=False, pad=0.18):
+    sp = f.getlength(" ")
+    for w in line.split():
+        wl = f.getlength(w)
+        if accent_match(w, accent):
+            pd = size * pad
+            d.rounded_rectangle([x - pd, y - size * 0.6, x + wl + pd, y + size * 0.6], radius=int(size * 0.26), fill=pill)
+            d.text((x, y), w, font=f, fill=pill_fg, anchor="lm")
+        else:
+            d.text((x, y), w, font=f, fill=fg, anchor="lm")
+        x += wl + sp
+
+
+def poster_statement(im, d, sc, T, lt, dur):
+    top, bot = 360, 1240
+    c0 = poster_panel(im, T, lt, top, bot)
+    d = ImageDraw.Draw(im)
+    d.text((W - 70, top - 70), "”", font=font(520), fill=mix(c0, (255, 255, 255), 0.22), anchor="ra")
+    size, lines = pick_size(sc.get("headline", ""), [128, 116, 104, 94, 84, 74], 880, 6, bot - top - 150)
+    lh = size * 1.2
+    y0 = (top + bot) / 2 - (len(lines) - 1) * lh / 2 + 10
+    f = font(size)
+    for i, ln in enumerate(lines):
+        pp = e_out((lt - 0.25 - 0.09 * i) / 0.45)
+        if pp <= 0:
+            continue
+        draw_rich_line(d, ln, sc.get("accent"), 90 - (1 - pp) * 120, y0 + i * lh, f, (255, 255, 255), (24, 18, 30),
+                       (255, 255, 255), size)
+    tp = e_back((lt - 0.6) / 0.5)
+    if tp > 0:
+        icon = icon_for(sc.get("headline", "") + " " + sc.get("voice", ""))
+        icon_tile(im, icon, 160, bot + 150, 130, c0, T["accent2"], scale=clamp(tp, 0, 1.05))
+
+
+def poster_hook(im, d, sc, T, lt, dur):
+    kicker(im, d, sc.get("kicker", DEFAULT_KICKER["hook"]), T, lt, 190)
+    top, bot = 330, 1130
+    c0 = poster_panel(im, T, lt, top, bot)
+    d = ImageDraw.Draw(im)
+    size, lines = pick_size(sc.get("headline", ""), [176, 160, 144, 128, 112, 98], 900, 4, bot - top - 130, lhk=1.12)
+    lh = size * 1.14
+    y0 = (top + bot) / 2 - (len(lines) - 1) * lh / 2 + 10
+    f = font(size)
+    for i, ln in enumerate(lines):
+        pp = e_back((lt - 0.2 - 0.1 * i) / 0.5)
+        if pp <= 0.02:
+            continue
+        draw_rich_line(d, ln, sc.get("accent"), 80, y0 + i * lh + (1 - clamp(pp, 0, 1)) * 60, f, (255, 255, 255),
+                       (24, 18, 30), (255, 255, 255), size, pad=0.14)
+    bp = e_back((lt - 0.7) / 0.5)
+    if bp > 0:
+        by = 1260 + (1 - clamp(bp, 0, 1)) * 200
+        d.rounded_rectangle([60, by, W - 60, by + 120], radius=30, fill=(24, 18, 30))
+        icon = icon_for(sc.get("headline", "") + " " + sc.get("_context", ""))
+        icon_tile(im, icon, 140, by + 60, 84, c0, T["accent2"], shadow=False)
+        d2 = ImageDraw.Draw(im)
+        s, ls = fit_text(sc.get("_title") or sc.get("headline", ""), 780, 2, [36, 32, 28])
+        for j, ln in enumerate(ls):
+            d2.text((215, by + 60 + (j - (len(ls) - 1) / 2) * s * 1.2), ln, font=font(s), fill=(255, 255, 255), anchor="lm")
+
+
+def poster_cards(im, d, sc, T, lt, dur):
+    kicker(im, d, sc.get("kicker", DEFAULT_KICKER["cards"]), T, lt, 190)
+    c0 = _c0(T)
+    hs, hl = pick_size(sc.get("heading", ""), [100, 90, 80], 900, 2, 220)
+    for i, ln in enumerate(hl):
+        a = e_out((lt - 0.05 * i) / 0.45)
+        d.text((80 - (1 - a) * 80, 380 + i * hs * 1.15), ln, font=font(hs), fill=T["fg"], anchor="lm")
+    ybar = 380 + len(hl) * hs * 1.15 - 20
+    d.rounded_rectangle([80, ybar, 80 + 220 * e_out((lt - 0.2) / 0.5), ybar + 14], radius=7, fill=(255, 255, 255) if T["accent"] == INK else c0)
+    items = [str(x) for x in sc.get("items", [])][:3]
+    y0 = ybar + 90
+    rh = 270
+    for i, it in enumerate(items):
+        p = e_out((lt - 0.3 - 0.22 * i) / 0.5)
+        if p <= 0.02:
+            continue
+        y = y0 + i * rh + (1 - p) * 120
+        d.text((70 - (1 - p) * 60, y + rh / 2 - 20), str(i + 1), font=font(210), fill=(255, 255, 255) if T["accent"] == INK else c0, anchor="lm")
+        s, lines = pick_size(it, [52, 46, 42, 38], 650, 3, rh - 40)
+        for j, ln in enumerate(lines):
+            d.text((300, y + rh / 2 - 20 + (j - (len(lines) - 1) / 2) * s * 1.22), ln, font=font(s), fill=T["fg"], anchor="lm")
+        d.line([(80, y + rh - 10), (80 + (W - 160) * p, y + rh - 10)], fill=mix(T["bg0"], T["fg"], 0.22), width=3)
+
+
+def term_window(im, y, h, title):
+    x, w = 55, W - 110
+    sh = Image.new("L", (W, H), 0)
+    ImageDraw.Draw(sh).rounded_rectangle([x, y + 24, x + w, y + h + 24], radius=36, fill=140)
+    sh = sh.filter(ImageFilter.GaussianBlur(26))
+    im.paste(Image.new("RGB", (W, H), (10, 6, 16)), (0, 0), sh)
+    d = ImageDraw.Draw(im)
+    d.rounded_rectangle([x, y, x + w, y + h], radius=36, fill=(17, 16, 28), outline=(70, 66, 96), width=3)
+    d.rounded_rectangle([x, y, x + w, y + 84], radius=36, fill=(30, 28, 46))
+    d.rectangle([x, y + 50, x + w, y + 84], fill=(30, 28, 46))
+    for k, col in enumerate(((255, 95, 86), (255, 189, 46), (39, 201, 63))):
+        d.ellipse([x + 36 + k * 46, y + 28, x + 62 + k * 46, y + 54], fill=col)
+    d.text((x + w / 2, y + 42), title, font=mfont(28), fill=(150, 146, 176), anchor="mm")
+    return d
+
+
+def term_type(d, rows, x0, y0, lh, size, nchars, accent, T, lt):
+    """rows: list of (text, color, is_headline). Types characters progressively."""
+    left = nchars
+    c0 = _c0(T)
+    y = y0
+    last = (x0, y0)
+    adv = mfont(size).getlength("M")
+    for text, col, rich in rows:
+        rs = size if rich else min(size, 44)
+        f = mfont(rs)
+        adv = f.getlength("M")
+        n = max(0, min(len(text), left))
+        shown = text[:n]
+        if rich:
+            x = x0
+            consumed = 0
+            for w in text.split(" "):
+                part = shown[consumed:consumed + len(w)]
+                if part:
+                    colr = c0 if accent_match(w, accent) else col
+                    d.text((x, y), part, font=f, fill=colr, anchor="lm")
+                x += (len(w) + 1) * adv
+                consumed += len(w) + 1
+        else:
+            d.text((x0, y), shown, font=f, fill=col, anchor="lm")
+        last = (x0 + len(shown) * adv, y)
+        left -= len(text)
+        y += lh if rich else lh * 0.9
+        if left < 0:
+            break
+    if int(lt * 2.4) % 2 == 0:
+        d.rectangle([last[0] + 4, last[1] - rs * 0.55, last[0] + 4 + adv * 0.7, last[1] + rs * 0.55], fill=c0)
+
+
+def term_scene(im, d, sc, T, lt, cmd, rows_text, accent, title, sizes, maxw_chars=26, headline_color=(255, 255, 255)):
+    size = sizes[0]
+    for s_ in sizes:
+        f = mfont(s_)
+        adv = f.getlength("M")
+        maxc = int(820 / adv)
+        lines = []
+        for t_ in rows_text:
+            lines += [("  " + ln if k else ln) for k, ln in enumerate(wrap_font(t_, f, maxc * adv))]
+        if len(lines) <= 8:
+            size = s_
+            break
+    lh = size * 1.55
+    h = 84 + 70 + 70 + (len(lines) + 1) * lh + 60
+    y = 760 - h / 2 + 50
+    p = e_back(lt / 0.5, 1.1)
+    y += (1 - clamp(p, 0, 1)) * 200
+    d = term_window(im, y, h, title)
+    rows = [("$ " + cmd, (110, 231, 160), False)] + [(ln, headline_color, True) for ln in lines]
+    n = int(max(0, lt - 0.35) * 48)
+    term_type(d, rows, 100, y + 84 + 70, lh, size, n, accent, T, lt)
+
+
+def term_statement(im, d, sc, T, lt, dur):
+    kicker(im, d, sc.get("kicker", DEFAULT_KICKER["statement"]), T, lt, 190)
+    term_scene(im, d, sc, T, lt, "cat insight.txt", [sc.get("headline", "")], sc.get("accent"), "insight.txt",
+               [64, 58, 52, 46, 42])
+
+
+def term_hook(im, d, sc, T, lt, dur):
+    kicker(im, d, sc.get("kicker", DEFAULT_KICKER["hook"]), T, lt, 190)
+    term_scene(im, d, sc, T, lt, "run breaking --tech", [sc.get("headline", "")], sc.get("accent"), "news.sh",
+               [76, 68, 60, 54, 48])
+
+
+def term_cards(im, d, sc, T, lt, dur):
+    kicker(im, d, sc.get("kicker", DEFAULT_KICKER["cards"]), T, lt, 190)
+    items = [f"[{i + 1}] {x}" for i, x in enumerate([str(x) for x in sc.get("items", [])][:3])]
+    term_scene(im, d, sc, T, lt, "ls " + (sc.get("heading", "key_points").lower().replace(" ", "_")[:22] or "key_points"),
+               items, None, "key_points.md", [46, 42, 38, 34])
+
+
+_FAM = {1: {"hook": poster_hook, "statement": poster_statement, "cards": poster_cards},
+        2: {"hook": term_hook, "statement": term_statement, "cards": term_cards}}
+_ORIG = dict(SCENES)
+
+
+def _wrap_scene(kind):
+    def f(im, d, sc, T, lt, dur):
+        fam = _FAM.get(LAYOUT["family"], {})
+        return fam.get(kind, _ORIG[kind])(im, d, sc, T, lt, dur)
+    return f
+
+
+for _k in ("hook", "statement", "cards"):
+    SCENES[_k] = _wrap_scene(_k)
+
+
 def render_scene(sc, lt, dur, t_abs):
     th = sc["_pal"]
     im = background(th, sc["_style"], t_abs, sc["_seed"])
@@ -1100,7 +1353,7 @@ def prepare_scenes(data):
     print("hue shift:", HUE["deg"])
     LAYOUT.update(cap=rng.randint(0, 2), trans=rng.randint(0, 3), hook=0, cards=0,
                   card=rng.randint(0, 3), news=rng.randint(0, 2), stat=rng.randint(0, 2), quote=rng.randint(0, 2),
-                  align=rng.randint(0, 1), kick=rng.randint(0, 2), brand=rng.randint(0, 1))
+                  align=rng.randint(0, 1), kick=rng.randint(0, 2), brand=rng.randint(0, 1), family=rng.choice([0, 1, 2]))
     global FONT_PATH
     cands = [p for p in ("/usr/share/fonts/opentype/inter/Inter-ExtraBold.otf", "/usr/share/fonts/opentype/inter/Inter-Black.otf",
                          "/usr/share/fonts/opentype/inter/InterDisplay-ExtraBold.otf") if os.path.exists(p)]
