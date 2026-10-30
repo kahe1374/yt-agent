@@ -889,6 +889,9 @@ def build_audio_mix(voice_path, full, events, seed, out_path):
 
     if os.environ.get("MUSIC", "1") != "0":
         music = synth_music(N / SR, seed)
+        if len(music) < N:
+            music = np.pad(music, ((0, N - len(music)), (0, 0)))
+        music = music[:N]
         mono_env = smooth(np.abs(v), 0.08)
         ref = np.percentile(mono_env, 95) or 1.0
         duck = 1.0 - 0.7 * smooth(np.clip(mono_env / ref, 0, 1), 0.3)
