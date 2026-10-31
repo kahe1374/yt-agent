@@ -19,7 +19,7 @@ FPS = 30
 END_CARD = 2.5
 TR = 0.30  # transition seconds
 
-ORANGE = (249, 115, 22)
+ORANGE = (0, 156, 235)  # brand blue/cyan (name kept for legacy code)
 RED = (239, 68, 68)
 INK = (27, 22, 20)
 
@@ -39,6 +39,20 @@ def _font_path():
 
 FONT_PATH = _font_path()
 _fonts = {}
+
+
+CAP_FONT = {"path": None}
+_cf = {}
+
+
+def capfont(size):
+    p = CAP_FONT["path"]
+    if not p:
+        return font(size)
+    k = (p, int(size))
+    if k not in _cf:
+        _cf[k] = ImageFont.truetype(p, int(size))
+    return _cf[k]
 
 
 def font(size):
@@ -156,15 +170,15 @@ def fit_text(text, max_w, max_lines, sizes):
 
 
 THEMES = {
-    "cream": dict(bg0=(253, 248, 242), bg1=(250, 229, 210), fg=INK, sub=(112, 100, 92), accent=ORANGE,
-                  accent2=(124, 58, 237), card=(255, 255, 255), cardfg=INK, dark=False,
-                  pill=ORANGE, pill_fg=(255, 255, 255)),
-    "dark": dict(bg0=(14, 9, 28), bg1=(42, 16, 52), fg=(255, 255, 255), sub=(190, 180, 212),
-                 accent=(251, 146, 60), accent2=(139, 92, 246), card=(38, 28, 58), cardfg=(255, 255, 255),
-                 dark=True, pill=(251, 146, 60), pill_fg=(20, 12, 8)),
-    "sun": dict(bg0=(238, 96, 56), bg1=(252, 150, 100), fg=(255, 255, 255), sub=(255, 236, 224),
-                accent=INK, accent2=(255, 214, 160), card=(255, 255, 255), cardfg=INK, dark=False,
-                pill=INK, pill_fg=(255, 255, 255)),
+    "cream": dict(bg0=(3, 9, 26), bg1=(8, 32, 78), fg=(255, 255, 255), sub=(160, 190, 225), accent=(0, 176, 240),
+                  accent2=(99, 102, 241), card=(14, 34, 70), cardfg=(255, 255, 255), dark=True,
+                  pill=(34, 211, 238), pill_fg=(3, 12, 30)),
+    "dark": dict(bg0=(2, 6, 18), bg1=(12, 22, 62), fg=(255, 255, 255), sub=(170, 185, 225),
+                 accent=(56, 189, 248), accent2=(139, 92, 246), card=(16, 26, 62), cardfg=(255, 255, 255),
+                 dark=True, pill=(56, 189, 248), pill_fg=(3, 10, 28)),
+    "sun": dict(bg0=(4, 14, 36), bg1=(6, 58, 98), fg=(255, 255, 255), sub=(170, 210, 235),
+                accent=(45, 212, 191), accent2=(59, 130, 246), card=(10, 40, 72), cardfg=(255, 255, 255), dark=True,
+                pill=(45, 212, 191), pill_fg=(2, 14, 26)),
 }
 HUE = {"deg": 0.0}
 LAYOUT = {"cap": 0, "trans": 0, "hook": 0, "cards": 0, "card": 0, "news": 0, "stat": 0, "quote": 0, "align": 0, "kick": 0, "brand": 0, "family": 0}
@@ -222,7 +236,7 @@ def background(theme, decor, t, seed=0):
         if key not in _cache:
             _cache[key] = _blob_sprite(380)
         sp = _cache[key]
-        cols = [c2, mix(mid, T["accent"], 0.22 if theme != "sun" else 0.0) if theme != "sun" else (255, 190, 150), c1]
+        cols = [c2, mix(mid, T["accent"], 0.22 if theme != "sun" else 0.0) if theme != "sun" else (40, 150, 225), c1]
         for i in range(3):
             bx = W / 2 + 420 * math.sin(t * (0.22 + 0.06 * i) + i * 2.1 + seed)
             by = H / 2 + 650 * math.sin(t * (0.17 + 0.05 * i) + i * 2.9 + seed * 0.7)
@@ -1152,7 +1166,7 @@ def draw_chrome(im, t, full, chunks, th):
             break
     if not cur:
         return
-    fnt = font(64)
+    fnt = capfont(66)
     words = [w[0] for w in cur["words"]]
     space = fnt.getlength(" ")
     tw = sum(fnt.getlength(w) for w in words) + space * (len(words) - 1)
@@ -1161,15 +1175,19 @@ def draw_chrome(im, t, full, chunks, th):
     cx, cy = (W - 70) / 2, CAP_CY + (1 - clamp(p, 0, 1)) * 40
     cs = LAYOUT["cap"]
     if cs == 0:
-        d.rounded_rectangle([cx - pw / 2, cy - ph / 2, cx + pw / 2, cy + ph / 2], radius=44, fill=(28, 22, 32))
+        d.rounded_rectangle([cx - pw / 2, cy - ph / 2, cx + pw / 2, cy + ph / 2], radius=44, fill=(6, 14, 34),
+                            outline=(40, 90, 150), width=3)
     elif cs == 1:
         d.rounded_rectangle([cx - pw / 2, cy - ph / 2, cx + pw / 2, cy + ph / 2], radius=44, fill=(255, 255, 255))
     x = cx - tw / 2
     for (w, a, b) in cur["words"]:
         wl = fnt.getlength(w)
         if a <= t < b:
-            d.rounded_rectangle([x - 16, cy - 56, x + wl + 16, cy + 56], radius=28, fill=ORANGE)
-        if cs == 2:
+            d.rounded_rectangle([x - 16, cy - 56, x + wl + 16, cy + 56], radius=28, fill=ORANGE if cs != 3 else (34, 211, 238))
+        if cs == 3:
+            d.text((x, cy + 2), w, font=fnt, fill=(3, 12, 30) if a <= t < b else (255, 255, 255), anchor="lm",
+                   stroke_width=0 if a <= t < b else 8, stroke_fill=(3, 10, 28))
+        elif cs == 2:
             d.text((x, cy + 2), w, font=fnt, fill=(255, 255, 255), anchor="lm", stroke_width=9, stroke_fill=(20, 14, 26))
         else:
             d.text((x, cy + 2), w, font=fnt, fill=(255, 255, 255) if cs == 0 or a <= t < b else (28, 22, 32), anchor="lm")
@@ -1197,7 +1215,13 @@ def synth_music(length, seed):
     """Stereo lo-fi/electronic bed: pad + pluck arp (reverb), bass, kick, hats, kick-pump."""
     import random
     rng = random.Random(seed)
-    bpm = rng.choice([84, 88, 92, 96, 100, 104, 108, 116, 124])
+    style = rng.choice([0, 1, 2, 3, 4])  # 0 lofi beat, 1 ambient, 2 soft bells, 3 dreamy, 4 gentle pulse
+    bpm = rng.choice([66, 72, 78, 84, 90]) if style in (1, 3) else rng.choice([80, 84, 88, 92, 96, 100, 104, 108])
+    kg = [0.5, 0.0, 0.3, 0.0, 0.4][style]
+    hat_on = style in (0, 4)
+    bass_g = [1.0, 0.45, 0.7, 0.45, 0.8][style]
+    bell = style in (2, 3)
+    print("music style:", style, "bpm", bpm)
     beat = 60.0 / bpm
     bar = beat * 4
     progs = [
@@ -1259,29 +1283,34 @@ def synth_music(length, seed):
             tb = np.arange(nn) / SR
             bass = (np.sin(2 * np.pi * root * tb) + 0.2 * np.sin(2 * np.pi * 2 * root * tb)) \
                 * np.exp(-tb * 3.2) * amp
-            add(dry, bass, t0 + pos * beat, 0.5)
-        for pos in (0, 1, 2, 3):
+            add(dry, bass * bass_g, t0 + pos * beat, 0.5)
+        for pos in ((0, 1, 2, 3) if kg > 0 and style != 2 else ((0, 2) if kg > 0 else ())):
             tk = np.arange(int(0.3 * SR)) / SR
             phase = 2 * np.pi * np.cumsum(48 + 100 * np.exp(-tk * 30)) / SR
-            add(dry, np.sin(phase) * np.exp(-tk * 9) * (0.34 if pos % 2 == 0 else 0.2), t0 + pos * beat, 0.5)
+            add(dry, np.sin(phase) * np.exp(-tk * 9) * (0.34 if pos % 2 == 0 else 0.2) * kg * 2, t0 + pos * beat, 0.5)
             kicks.append(t0 + pos * beat)
         noise = np.random.RandomState(b).randn(int(0.05 * SR))
         hat = np.diff(noise, prepend=0) * np.exp(-np.arange(len(noise)) / SR * 110) * 0.6
-        for pos in range(1, 8, 2 if hat_step == 1 else 1):
-            add(dry, hat * 0.05, t0 + pos * beat / 2, 0.55)
+        for pos in (range(1, 8, 2 if hat_step == 1 else 1) if hat_on else ()):
+            add(dry, hat * 0.04, t0 + pos * beat / 2, 0.55)
         arps = [[0, 1, 2, 3, 2, 1, 3, 2], [0, 2, 1, 3, 0, 2, 3, 1], [3, 2, 1, 0, 1, 2, 3, 2]]
         arp = [chord[j] for j in arps[arp_style]]
         for k in range(8):
-            tp = np.arange(int(0.5 * SR)) / SR
-            fr = f(arp[k] + (24 if pluck_mul == 1.0 else 12))
-            pl = (np.sin(2 * np.pi * fr * tp) + 0.3 * np.sin(2 * np.pi * 2 * fr * tp)) * np.exp(-tp * 6.5)
-            add(pluck, pl * 0.08, t0 + k * beat / 2, 0.3 if k % 2 else 0.7)
+            if style == 1 and k % 2:
+                continue
+            tp = np.arange(int(0.9 * SR)) / SR
+            fr = f(arp[k] + (24 if pluck_mul == 1.0 and style != 1 else 12))
+            if bell:
+                pl = np.sin(2 * np.pi * fr * tp + 1.6 * np.sin(2 * np.pi * 3.5 * fr * tp) * np.exp(-tp * 7)) * np.exp(-tp * 3.2)
+            else:
+                pl = (np.sin(2 * np.pi * fr * tp) + 0.3 * np.sin(2 * np.pi * 2 * fr * tp)) * np.exp(-tp * 6.5)
+            add(pluck, pl * 0.06, t0 + k * beat / 2, 0.3 if k % 2 else 0.7)
     pump = np.ones(N)
     for kt in kicks[::2]:
         i = int(kt * SR)
         seg = min(N - i, int(0.3 * SR))
         if seg > 0:
-            pump[i:i + seg] *= 1 - 0.45 * np.exp(-np.arange(seg) / SR * 9)
+            pump[i:i + seg] *= 1 - (0.45 if kg > 0 else 0.0) * np.exp(-np.arange(seg) / SR * 9)
     pad *= pump[:, None]
     bus = pad + pluck
     wet = np.stack([_reverb(bus[:, 0], 11), _reverb(bus[:, 1], 23)], axis=1)
@@ -1379,17 +1408,17 @@ def build_audio_mix(voice_path, full, events, seed, out_path):
         mono_env = smooth(np.abs(v), 0.08)
         ref = np.percentile(mono_env, 95) or 1.0
         duck = 1.0 - 0.7 * smooth(np.clip(mono_env / ref, 0, 1), 0.3)
-        mix_ += music[:N] * (duck * 0.32)[:, None]
+        mix_ += music[:N] * (duck * 0.19)[:, None]
 
     import random as _r
     sr_ = _r.Random(seed + 5)
     pr = lambda: sr_.choice([0.8, 0.9, 1.0, 1.12, 1.25, 1.4])
-    lib = {"whoosh": (shift_pitch(sfx_whoosh(sr_.choice([0.45, 0.6, 0.8])), pr()), 0.7),
-           "pop": (shift_pitch(sfx_pop(), pr()), 0.7), "thump": (shift_pitch(sfx_thump(), sr_.choice([0.85, 1.0, 1.2])), 0.7),
-           "rise": (shift_pitch(sfx_rise(), sr_.choice([0.85, 1.0, 1.2])), 0.7),
-           "ding": (shift_pitch(sfx_ding(), pr()), 0.7),
-           "chime": (shift_pitch(sfx_ding((1046.5, 1318.5, 1568.0), 0.09), pr()), 0.7),
-           "tick": (shift_pitch(sfx_tick(), sr_.choice([0.7, 1.0, 1.4])), 0.22)}
+    lib = {"whoosh": (shift_pitch(sfx_whoosh(sr_.choice([0.45, 0.6, 0.8])), pr()), 0.45),
+           "pop": (shift_pitch(sfx_pop(), pr()), 0.45), "thump": (shift_pitch(sfx_thump(), sr_.choice([0.85, 1.0, 1.2])), 0.45),
+           "rise": (shift_pitch(sfx_rise(), sr_.choice([0.85, 1.0, 1.2])), 0.45),
+           "ding": (shift_pitch(sfx_ding(), pr()), 0.45),
+           "chime": (shift_pitch(sfx_ding((1046.5, 1318.5, 1568.0), 0.09), pr()), 0.45),
+           "tick": (shift_pitch(sfx_tick(), sr_.choice([0.7, 1.0, 1.4])), 0.12)}
     for kind, t in events:
         s, g = lib[kind]
         i = int(max(0.0, t) * SR)
@@ -1441,11 +1470,15 @@ def prepare_scenes(data):
     names = list(THEMES)
     rng.shuffle(names)
     prefer = {"hook": names[0], "stat": names[1], "cards": names[2], "cta": names[1]}
-    HUE["deg"] = rng.choice([0, 0, 150, 185, 215, 250, 285, 320, 345])
+    HUE["deg"] = rng.choice([0, 0, 0, 0, 340, 20])
     print("hue shift:", HUE["deg"])
-    LAYOUT.update(cap=rng.randint(0, 2), trans=rng.randint(0, 3), hook=0, cards=0,
+    LAYOUT.update(cap=rng.randint(0, 3), trans=rng.randint(0, 3), hook=0, cards=0,
                   card=rng.randint(0, 3), news=rng.randint(0, 2), stat=rng.randint(0, 2), quote=rng.randint(0, 2),
                   align=rng.randint(0, 1), kick=rng.randint(0, 2), brand=rng.randint(0, 1), family=rng.choice([0, 1, 2]))
+    import glob
+    fancy = [p for p in sorted(glob.glob("fonts/*.ttf") + glob.glob("fonts/*.otf")) if os.path.getsize(p) > 5000]
+    CAP_FONT["path"] = rng.choice(fancy) if fancy else None
+    print("caption font:", CAP_FONT["path"])
     global FONT_PATH
     cands = [p for p in ("/usr/share/fonts/opentype/inter/Inter-ExtraBold.otf", "/usr/share/fonts/opentype/inter/Inter-Black.otf",
                          "/usr/share/fonts/opentype/inter/InterDisplay-ExtraBold.otf") if os.path.exists(p)]
@@ -1498,7 +1531,7 @@ def main():
     scenes[-1]["_t1"] = full
 
     # caption chunks (global)
-    cap_font = font(64)
+    cap_font = capfont(66)
     raw_chunks = make_chunks(words, cap_font)
     chunks = []
     for ci, ch in enumerate(raw_chunks):
