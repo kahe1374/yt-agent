@@ -461,6 +461,27 @@ def icon_tile(im, name, cx, cy, size, c0, c1, scale=1.0, shadow=True):
 
 # ------------------------------------------------------------------ drawing helpers
 
+GLASS = {"on": False}
+
+
+def glass_panel(im, x, y, w, h, radius, tint=(255, 255, 255), amt=0.16):
+    """Frosted glass: blurred backdrop + light tint + bright rim."""
+    x0, y0 = max(0, x), max(0, y)
+    x1, y1 = min(W, x + w), min(H, y + h)
+    if x1 <= x0 or y1 <= y0:
+        return
+    region = im.crop((x0, y0, x1, y1))
+    bl = region.filter(ImageFilter.GaussianBlur(22))
+    bl = Image.blend(bl, Image.new("RGB", bl.size, tint), amt)
+    m = Image.new("L", (w * 2, h * 2), 0)
+    ImageDraw.Draw(m).rounded_rectangle([0, 0, w * 2 - 1, h * 2 - 1], radius=radius * 2, fill=255)
+    m = m.resize((w, h), Image.LANCZOS).crop((x0 - x, y0 - y, x1 - x, y1 - y))
+    im.paste(bl, (x0, y0), m)
+    d = ImageDraw.Draw(im)
+    d.rounded_rectangle([x, y, x + w, y + h], radius=radius, outline=(255, 255, 255), width=3)
+    d.rounded_rectangle([x + 3, y + 3, x + w - 3, y + h - 3], radius=max(2, radius - 3), outline=(150, 200, 240), width=1)
+
+
 def card(im, x, y, w, h, T, radius=44):
     x, y, w, h = int(x), int(y), int(w), int(h)
     st = LAYOUT["card"]
@@ -468,6 +489,9 @@ def card(im, x, y, w, h, T, radius=44):
         radius = int(min(radius * 2, h / 2))
     elif st == 2:
         radius = int(radius * 0.45)
+    if GLASS["on"] and st != 2:
+        glass_panel(im, x, y, w, h, radius, tint=(120, 170, 235), amt=0.22)
+        return
     if st != 2:
         key = ("shadow", w, h, radius)
         if key not in _cache:
@@ -842,7 +866,7 @@ def poster_panel(im, T, lt, top, bot, slant=90):
     od = ImageDraw.Draw(ov)
     dx = -W * (1 - p)
     c0 = _c0(T)
-    od.polygon([(dx, top), (W + dx, top - slant), (W + dx, bot), (dx, bot + slant)], fill=c0 + (255,))
+    od.polygon([(dx, top), (W + dx, top - slant), (W + dx, bot), (dx, bot + slant)], fill=c0 + ((205,) if GLASS["on"] else (255,)))
     sh = Image.new("L", (W, H), 0)
     ImageDraw.Draw(sh).polygon([(dx, top + 20), (W + dx, top - slant + 20), (W + dx, bot + 28), (dx, bot + slant + 28)], fill=90)
     sh = sh.filter(ImageFilter.GaussianBlur(22))
@@ -942,10 +966,14 @@ def term_window(im, y, h, title):
     ImageDraw.Draw(sh).rounded_rectangle([x, y + 24, x + w, y + h + 24], radius=36, fill=140)
     sh = sh.filter(ImageFilter.GaussianBlur(26))
     im.paste(Image.new("RGB", (W, H), (10, 6, 16)), (0, 0), sh)
-    d = ImageDraw.Draw(im)
-    d.rounded_rectangle([x, y, x + w, y + h], radius=36, fill=(17, 16, 28), outline=(70, 66, 96), width=3)
-    d.rounded_rectangle([x, y, x + w, y + 84], radius=36, fill=(30, 28, 46))
-    d.rectangle([x, y + 50, x + w, y + 84], fill=(30, 28, 46))
+    if GLASS["on"]:
+        glass_panel(im, x, y, w, h, 36, tint=(8, 20, 50), amt=0.55)
+        d = ImageDraw.Draw(im)
+    else:
+        d = ImageDraw.Draw(im)
+        d.rounded_rectangle([x, y, x + w, y + h], radius=36, fill=(17, 16, 28), outline=(70, 66, 96), width=3)
+        d.rounded_rectangle([x, y, x + w, y + 84], radius=36, fill=(30, 28, 46))
+        d.rectangle([x, y + 50, x + w, y + 84], fill=(30, 28, 46))
     for k, col in enumerate(((255, 95, 86), (255, 189, 46), (39, 201, 63))):
         d.ellipse([x + 36 + k * 46, y + 28, x + 62 + k * 46, y + 54], fill=col)
     d.text((x + w / 2, y + 42), title, font=mfont(28), fill=(150, 146, 176), anchor="mm")
@@ -1107,6 +1135,7 @@ def attach_images(scenes, data, seed):
             k = ok[i % len(ok)]
         sc["_img"] = f"{OUT}/ai_{k}.jpg"
         sc["_pal"] = "dark"
+    GLASS["on"] = True
     return True
 
 
@@ -1115,6 +1144,8 @@ def photo_bg(sc, lt, dur):
     if path not in _ai:
         im = Image.open(path).convert("RGB")
         sc_ = max(W * 1.25 / im.size[0], H * 1.25 / im.size[1])
+        from PIL import ImageEnhance
+        im = ImageEnhance.Color(ImageEnhance.Contrast(ImageEnhance.Brightness(im).enhance(1.12)).enhance(1.12)).enhance(1.25)
         _ai[path] = im.resize((int(im.size[0] * sc_), int(im.size[1] * sc_)), Image.LANCZOS)
     big = _ai[path]
     p = clamp(lt / max(dur, 0.1))
@@ -1128,10 +1159,10 @@ def photo_bg(sc, lt, dur):
         sh = Image.new("L", (W, H))
         dd = ImageDraw.Draw(sh)
         for y in range(H):
-            v = 0.50 + 0.28 * (y / H) ** 1.6 + 0.10 * math.exp(-((y - 1470) / 260.0) ** 2)
+            v = 0.22 + 0.30 * (y / H) ** 1.8 + 0.08 * math.exp(-((y - 1470) / 260.0) ** 2)
             dd.line([(0, y), (W, y)], fill=int(255 * min(v, 0.85)))
         _ai["shade"] = sh
-    im = Image.composite(Image.new("RGB", (W, H), (8, 6, 16)), im, _ai["shade"])
+    im = Image.composite(Image.new("RGB", (W, H), (4, 8, 22)), im, _ai["shade"])
     return im
 
 
