@@ -466,6 +466,7 @@ GLASS = {"on": False}
 
 def glass_panel(im, x, y, w, h, radius, tint=(255, 255, 255), amt=0.16):
     """Frosted glass: blurred backdrop + light tint + bright rim."""
+    x, y, w, h, radius = int(x), int(y), int(w), int(h), int(radius)
     x0, y0 = max(0, x), max(0, y)
     x1, y1 = min(W, x + w), min(H, y + h)
     if x1 <= x0 or y1 <= y0:
