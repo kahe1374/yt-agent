@@ -60,21 +60,29 @@ def main():
         "status": {
             "privacyStatus": PRIVACY,
             "selfDeclaredMadeForKids": False,
+            "containsSyntheticMedia": True,  # AI-generated images/voice -> "altered or synthetic content" label
         },
     }
 
-    init = requests.post(
-        "https://www.googleapis.com/upload/youtube/v3/videos"
-        "?uploadType=resumable&part=snippet,status",
-        headers={
-            "Authorization": f"Bearer {token}",
-            "Content-Type": "application/json; charset=UTF-8",
-            "X-Upload-Content-Type": "video/mp4",
-            "X-Upload-Content-Length": str(size),
-        },
-        json=body,
-        timeout=60,
-    )
+    def start(b):
+        return requests.post(
+            "https://www.googleapis.com/upload/youtube/v3/videos"
+            "?uploadType=resumable&part=snippet,status",
+            headers={
+                "Authorization": f"Bearer {token}",
+                "Content-Type": "application/json; charset=UTF-8",
+                "X-Upload-Content-Type": "video/mp4",
+                "X-Upload-Content-Length": str(size),
+            },
+            json=b,
+            timeout=60,
+        )
+
+    init = start(body)
+    if init.status_code == 400 and "ynthetic" in init.text:
+        print("synthetic flag rejected, retrying without it:", init.text[:200])
+        body["status"].pop("containsSyntheticMedia", None)
+        init = start(body)
     if init.status_code != 200:
         raise RuntimeError(f"Upload init failed: {init.status_code} {init.text[:500]}")
     upload_url = init.headers["Location"]
