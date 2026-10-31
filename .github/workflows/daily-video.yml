@@ -2,7 +2,7 @@ name: Daily Tech Video
 
 on:
   schedule:
-    - cron: "0 5 * * *"
+    - cron: '0 21 * * *'
   workflow_dispatch:
 
 jobs:
@@ -20,6 +20,15 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y ffmpeg fonts-dejavu-core fonts-inter
+
+      - name: Download caption fonts
+        run: |
+          mkdir -p fonts
+          B=https://raw.githubusercontent.com/google/fonts/main/ofl
+          for f in lilitaone/LilitaOne-Regular bangers/Bangers-Regular righteous/Righteous-Regular chewy/Chewy-Regular paytoneone/PaytoneOne-Regular; do
+            curl -fsSL -m 30 -o "fonts/$(basename $f).ttf" "$B/$f.ttf" || echo "skip $f"
+          done
+          ls -la fonts
 
       - name: Install Python packages
         run: pip install -r requirements.txt
