@@ -1106,6 +1106,27 @@ def fetch_ai_image(prompt, path, seed):
     return False
 
 
+VISUAL_SUBJECTS = [
+    (r"phone|iphone|android|pixel|galaxy|quick share|smartphone|ios", "a modern smartphone"),
+    (r"laptop|macbook|windows|notebook|chromebook", "a sleek laptop on a desk"),
+    (r"chip|nvidia|gpu|cpu|processor|semiconductor|ryzen|rtx", "a glowing microchip close-up"),
+    (r"\bai\b|openai|chatgpt|gemini|claude|robot|neural|model", "an abstract glowing neural network of light"),
+    (r"tesla|\bcar\b|\bev\b|electric vehicle|drone", "a futuristic electric car"),
+    (r"game|xbox|playstation|nintendo|steam", "a game console and controller"),
+    (r"watch|airpods|headphone|earbud|wearable", "a smartwatch and wireless earbuds"),
+    (r"satellite|space|rocket|starlink", "a satellite orbiting earth"),
+]
+
+
+def visual_subject(data):
+    """Generic picture subject (no title words) chosen from the story's topic."""
+    text = " ".join([data.get("title", "")] + list(data.get("keywords", []))).lower()
+    for pat, subj in VISUAL_SUBJECTS:
+        if re.search(pat, text):
+            return subj
+    return "futuristic technology devices glowing in a dark studio"
+
+
 def attach_images(scenes, data, seed):
     """Generate topic-matched photos; scenes without a photo keep the animated graphic background."""
     if not os.environ.get("POLLINATIONS_API_KEY"):
@@ -1114,14 +1135,15 @@ def attach_images(scenes, data, seed):
     import random
     from concurrent.futures import ThreadPoolExecutor
     rng = random.Random(seed)
-    subject = data.get("title", "technology news")
-    kws = ", ".join(data.get("keywords", [])[:3])
+    subject = visual_subject(data)
     n = min(4, len(scenes))
     shots = rng.sample(SHOTS, n)
     jobs = []
     for k in range(n):
-        p = (f"{shots[k]} of {subject}, {kws}, photorealistic, cinematic lighting, shallow depth of field, "
-             "vertical composition, no text, no letters, no logos, no watermark")
+        # never put the headline/title words in the prompt: image models paint them into the picture
+        p = (f"{shots[k]} of {subject}, photorealistic, cinematic lighting, shallow depth of field, "
+             "vertical composition, plain screens and surfaces, no text, no letters, no words, no numbers, "
+             "no logos, no watermark, no captions")
         jobs.append((p, f"{OUT}/ai_{k}.jpg", seed + k))
     os.makedirs(OUT, exist_ok=True)
     with ThreadPoolExecutor(max_workers=2) as ex:
