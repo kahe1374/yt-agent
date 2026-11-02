@@ -1140,6 +1140,100 @@ def attach_images(scenes, data, seed):
     return True
 
 
+# ------------------------------------------------------------------ real product photos (Wikimedia Commons, free licences only)
+
+COMMONS_PRODUCTS = ["iphone", "ipad", "macbook", "imac", "airpods", "apple watch", "vision pro", "pixel", "galaxy",
+                    "playstation", "xbox", "nintendo switch", "steam deck", "geforce", "rtx", "ryzen", "surface",
+                    "kindle", "starlink", "cybertruck", "tesla model"]
+COMMONS_UA = {"User-Agent": "TrendPulseDailyBot/1.0 (https://github.com/kahe1374/yt-agent; news video background)"}
+
+
+def commons_license_ok(meta):
+    """Only CC0 / public domain / CC BY / CC BY-SA (no NC, no ND)."""
+    name = ((meta.get("LicenseShortName") or {}).get("value") or "").lower().strip()
+    if not name or re.search(r"\b(nc|nd)\b", name.replace("-", " ")):
+        return False
+    return name.startswith(("cc0", "public domain", "pd", "cc by", "cc-by"))
+
+
+def commons_queries(data):
+    """Product names found in the title/keywords, e.g. 'iPhone 17', 'MacBook Pro' (model number kept when present)."""
+    text = " ".join([data.get("title", "")] + list(data.get("keywords", [])) + [data.get("narration", "")[:300]])
+    out = []
+    for prod in COMMONS_PRODUCTS:
+        m = re.search(r"\b" + re.escape(prod) + r"(?:\s+(?:pro max|pro|plus|ultra|max|air|mini|fold|\d+[a-z]*))?", text, re.I)
+        if m and m.group(0).lower() not in [q.lower() for q in out]:
+            out.append(m.group(0))
+    return out[:2]
+
+
+def commons_search(query):
+    """Best matching free-licensed photo for the query or None. The file title must contain the product name."""
+    import requests
+    r = requests.get("https://commons.wikimedia.org/w/api.php", headers=COMMONS_UA, timeout=30, params={
+        "action": "query", "format": "json", "generator": "search", "gsrnamespace": 6, "gsrlimit": 12,
+        "gsrsearch": query + " filetype:bitmap", "prop": "imageinfo", "iiprop": "url|size|mime|extmetadata",
+        "iiurlwidth": 1600})
+    r.raise_for_status()
+    pages = (r.json().get("query") or {}).get("pages") or {}
+    prod = query.lower().split()[0] if query.lower().split()[0] not in ("apple", "vision", "nintendo", "steam", "tesla") else query.lower()
+    best = None
+    for pg in sorted(pages.values(), key=lambda x: x.get("index", 99)):
+        info = (pg.get("imageinfo") or [{}])[0]
+        title = pg.get("title", "").lower()
+        if info.get("mime") not in ("image/jpeg", "image/png") or prod not in title:
+            continue
+        if min(info.get("width", 0), info.get("height", 0)) < 800 or not info.get("thumburl"):
+            continue
+        meta = info.get("extmetadata") or {}
+        if not commons_license_ok(meta):
+            continue
+        artist = re.sub(r"<[^>]+>", "", (meta.get("Artist") or {}).get("value") or "Unknown author").strip()[:60]
+        lic = (meta.get("LicenseShortName") or {}).get("value", "")
+        best = {"url": info["thumburl"], "page": info.get("descriptionurl", ""),
+                "credit": f"{pg.get('title', '').replace('File:', '')[:70]} by {artist} ({lic}), Wikimedia Commons {info.get('descriptionurl', '')}"}
+        break
+    return best
+
+
+def attach_commons(scenes, data):
+    """Put a real product photo behind the hook and one middle scene. Silent no-op when nothing matches / offline."""
+    if os.environ.get("USE_COMMONS", "1") == "0":
+        return False
+    try:
+        import requests
+        found = []
+        for q in commons_queries(data):
+            hit = commons_search(q)
+            if hit:
+                found.append(hit)
+        if not found:
+            print("commons: no matching free photo")
+            return False
+        os.makedirs(OUT, exist_ok=True)
+        credits, paths = [], []
+        for k, hit in enumerate(found):
+            img = requests.get(hit["url"], headers=COMMONS_UA, timeout=60).content
+            path = f"{OUT}/commons_{k}.jpg"
+            with open(path, "wb") as f:
+                f.write(img)
+            Image.open(path).convert("RGB").save(path, quality=92)
+            paths.append(path)
+            credits.append(hit["credit"])
+        targets = [0] + ([len(scenes) // 2] if len(scenes) > 3 else [])
+        for j, i in enumerate(targets):
+            scenes[i]["_img"] = paths[j % len(paths)]
+            scenes[i]["_pal"] = "dark"
+        with open(f"{OUT}/credits.json", "w", encoding="utf-8") as f:
+            json.dump(credits, f, ensure_ascii=False)
+        GLASS["on"] = True
+        print("commons photos:", credits)
+        return True
+    except Exception as e:  # noqa: BLE001
+        print("commons skipped:", type(e).__name__, str(e)[:120])
+        return False
+
+
 def photo_bg(sc, lt, dur):
     path = sc["_img"]
     if path not in _ai:
@@ -1533,7 +1627,9 @@ def prepare_scenes(data):
         s["_title"] = data.get("title", "")
         s["_context"] = ctx
         prev_th, prev_decor = th, decor
-    if attach_images(scenes, data, seed):
+    got_ai = attach_images(scenes, data, seed)
+    got_real = attach_commons(scenes, data)
+    if got_ai or got_real:
         HUE["deg"] = 0
     return scenes
 
