@@ -621,7 +621,7 @@ def scene_hook(im, d, sc, T, lt, dur):
     kicker(im, d, sc.get("kicker", DEFAULT_KICKER["hook"]), T, lt, 250)
     size, lines = fit_text(sc.get("headline", ""), 900, 3, [150, 136, 122, 110, 98])
     lh = size * 1.18
-    hy = 600 if LAYOUT["hook"] == 0 else 1000
+    hy = 600 if LAYOUT["hook"] == 0 else 950
     top = hy - (len(lines) * lh) / 2 + lh / 2
     for i, ln in enumerate(lines):
         p = e_back((lt - 0.08 * i - 0.1) / 0.5)
@@ -639,7 +639,7 @@ def scene_hook(im, d, sc, T, lt, dur):
         scl = clamp(pcard, 0, 1.06)
         if abs(scl - 1) > 0.01:
             rot = rot.resize((int(rot.size[0] * scl), int(rot.size[1] * scl)), Image.BILINEAR)
-        cy = (1130 if LAYOUT["hook"] == 0 else 560) + (1 - clamp(pcard, 0, 1)) * 260 + 8 * math.sin(lt * 2.1)
+        cy = (1050 if LAYOUT["hook"] == 0 else 560) + (1 - clamp(pcard, 0, 1)) * 260 + 8 * math.sin(lt * 2.1)
         im.paste(rot, (int(W / 2 - rot.size[0] / 2), int(cy - rot.size[1] / 2)), rot)
 
 
@@ -648,7 +648,7 @@ def scene_statement(im, d, sc, T, lt, dur):
     size, lines = fit_text(sc.get("headline", ""), 780, 5, [104, 94, 84, 74, 64])
     lh = size * 1.26
     ch = len(lines) * lh + 250
-    cy0 = 800 - ch / 2 + 60
+    cy0 = 800 - ch / 2
     p = e_back((lt - 0.05) / 0.55, 1.2)
     if p <= 0.02:
         return
@@ -715,10 +715,10 @@ def scene_stat(im, d, sc, T, lt, dur):
         shown = value
     st = LAYOUT["stat"]
     c0 = T["accent"] if T["accent"] != INK else ORANGE
-    cx, cy = W / 2, 760
+    cx, cy = W / 2, 700
     if st == 0:
         R, wd = 300, 40
-        cx, cy = W / 2, 760
+        cx, cy = W / 2, 700
         S = 2
         box = (R + wd) * 2 + 20
         ring = Image.new("RGBA", (box * S, box * S), (0, 0, 0, 0))
@@ -756,11 +756,11 @@ def scene_stat(im, d, sc, T, lt, dur):
     pop = e_back((lt - 0.05) / 0.5)
     d.text((cx, cy - 4), shown, font=font(size * clamp(0.6 + 0.4 * pop, 0.6, 1.06)),
            fill=(255, 255, 255) if st == 2 else T["fg"], anchor="mm")
-    ls, llines = fit_text(sc.get("label", ""), 900, 3, [76, 68, 60, 52])
+    ls, llines = fit_text(sc.get("label", ""), 900, 2, [76, 68, 60, 52])
     for i, ln in enumerate(llines):
         a = e_out((lt - 0.5 - 0.1 * i) / 0.4)
         if a > 0:
-            d.text((W / 2, 1180 + i * ls * 1.25 + (1 - a) * 30), ln, font=font(ls),
+            d.text((W / 2, 1100 + i * ls * 1.25 + (1 - a) * 30), ln, font=font(ls),
                    fill=mix(T["bg0"], T["fg"], a), anchor="mm")
 
 
@@ -774,7 +774,7 @@ def scene_cards(im, d, sc, T, lt, dur):
     ybar = 420 + len(hl) * hs * 1.2 - 10
     d.rounded_rectangle([W / 2 - 90 * ub, ybar, W / 2 + 90 * ub, ybar + 12], radius=6, fill=T["accent"])
     items = [str(x) for x in sc.get("items", [])][:3]
-    ch, gap = 215, 30
+    ch, gap = 190, 24
     y0 = 560 if len(hl) == 1 else 620
     for i, it in enumerate(items):
         p = e_back((lt - 0.25 - 0.22 * i) / 0.55, 1.4)
@@ -799,12 +799,12 @@ def scene_cta(im, d, sc, T, lt, dur):
     size, lines = fit_text(sc.get("headline", "Follow for daily tech news"), 900, 3, [124, 110, 96])
     for i, ln in enumerate(lines):
         p = e_back((lt - 0.1 * i) / 0.5)
-        d.text((W / 2, 560 + i * size * 1.2), ln, font=font(size * clamp(0.5 + 0.5 * p, 0.5, 1.1)),
+        d.text((W / 2, 500 + i * size * 1.2), ln, font=font(size * clamp(0.5 + 0.5 * p, 0.5, 1.1)),
                fill=T["fg"], anchor="mm")
     p = e_back((lt - 0.5) / 0.5)
     pulse = 1 + 0.04 * math.sin(lt * 7)
     bw, bh = 700 * pulse * clamp(p, 0, 1.05), 170 * pulse * clamp(p, 0, 1.05)
-    cy = 560 + len(lines) * size * 1.2 + 120
+    cy = 500 + len(lines) * size * 1.2 + 120
     if p > 0:
         d.rounded_rectangle([W / 2 - bw / 2, cy - bh / 2, W / 2 + bw / 2, cy + bh / 2], radius=60, fill=RED)
         d.text((W / 2, cy), "SUBSCRIBE", font=font(72 * clamp(p, 0.3, 1)), fill=(255, 255, 255), anchor="mm")
@@ -890,7 +890,7 @@ def draw_rich_line(d, line, accent, x, y, f, fg, pill, pill_fg, size, mono=False
 
 
 def poster_statement(im, d, sc, T, lt, dur):
-    top, bot = 360, 1240
+    top, bot = 360, 1100
     c0 = poster_panel(im, T, lt, top, bot)
     d = ImageDraw.Draw(im)
     d.text((W - 70, top - 70), "”", font=font(520), fill=mix(c0, (255, 255, 255), 0.22), anchor="ra")
@@ -907,12 +907,12 @@ def poster_statement(im, d, sc, T, lt, dur):
     tp = e_back((lt - 0.6) / 0.5)
     if tp > 0:
         icon = icon_for(sc.get("headline", "") + " " + sc.get("voice", ""))
-        icon_tile(im, icon, 160, bot + 150, 130, c0, T["accent2"], scale=clamp(tp, 0, 1.05))
+        icon_tile(im, icon, 160, bot + 100, 130, c0, T["accent2"], scale=clamp(tp, 0, 1.05))
 
 
 def poster_hook(im, d, sc, T, lt, dur):
     kicker(im, d, sc.get("kicker", DEFAULT_KICKER["hook"]), T, lt, 190)
-    top, bot = 330, 1130
+    top, bot = 330, 1060
     c0 = poster_panel(im, T, lt, top, bot)
     d = ImageDraw.Draw(im)
     size, lines = pick_size(sc.get("headline", ""), [176, 160, 144, 128, 112, 98], 900, 4, bot - top - 130, lhk=1.12)
@@ -927,7 +927,7 @@ def poster_hook(im, d, sc, T, lt, dur):
                        (24, 18, 30), (255, 255, 255), size, pad=0.14)
     bp = e_back((lt - 0.7) / 0.5)
     if bp > 0:
-        by = 1260 + (1 - clamp(bp, 0, 1)) * 200
+        by = 1090 + (1 - clamp(bp, 0, 1)) * 200
         d.rounded_rectangle([60, by, W - 60, by + 120], radius=30, fill=(24, 18, 30))
         icon = icon_for(sc.get("headline", "") + " " + sc.get("_context", ""))
         icon_tile(im, icon, 140, by + 60, 84, c0, T["accent2"], shadow=False)
@@ -947,14 +947,14 @@ def poster_cards(im, d, sc, T, lt, dur):
     ybar = 380 + len(hl) * hs * 1.15 - 20
     d.rounded_rectangle([80, ybar, 80 + 220 * e_out((lt - 0.2) / 0.5), ybar + 14], radius=7, fill=(255, 255, 255) if T["accent"] == INK else c0)
     items = [str(x) for x in sc.get("items", [])][:3]
-    y0 = ybar + 90
-    rh = 270
+    y0 = ybar + 60
+    rh = 195
     for i, it in enumerate(items):
         p = e_out((lt - 0.3 - 0.22 * i) / 0.5)
         if p <= 0.02:
             continue
         y = y0 + i * rh + (1 - p) * 120
-        d.text((70 - (1 - p) * 60, y + rh / 2 - 20), str(i + 1), font=font(210), fill=(255, 255, 255) if T["accent"] == INK else c0, anchor="lm")
+        d.text((70 - (1 - p) * 60, y + rh / 2 - 20), str(i + 1), font=font(160), fill=(255, 255, 255) if T["accent"] == INK else c0, anchor="lm")
         s, lines = pick_size(it, [52, 46, 42, 38], 650, 3, rh - 40)
         for j, ln in enumerate(lines):
             d.text((300, y + rh / 2 - 20 + (j - (len(lines) - 1) / 2) * s * 1.22), ln, font=font(s), fill=T["fg"], anchor="lm")
@@ -1029,7 +1029,7 @@ def term_scene(im, d, sc, T, lt, cmd, rows_text, accent, title, sizes, maxw_char
             break
     lh = size * 1.55
     h = 84 + 70 + 70 + (len(lines) + 1) * lh + 60
-    y = 760 - h / 2 + 50
+    y = 740 - h / 2
     p = e_back(lt / 0.5, 1.1)
     y += (1 - clamp(p, 0, 1)) * 200
     d = term_window(im, y, h, title)
@@ -1160,7 +1160,7 @@ def photo_bg(sc, lt, dur):
         sh = Image.new("L", (W, H))
         dd = ImageDraw.Draw(sh)
         for y in range(H):
-            v = 0.22 + 0.30 * (y / H) ** 1.8 + 0.08 * math.exp(-((y - 1470) / 260.0) ** 2)
+            v = 0.22 + 0.30 * (y / H) ** 1.8 + 0.08 * math.exp(-((y - CAP_CY) / 260.0) ** 2)
             dd.line([(0, y), (W, y)], fill=int(255 * min(v, 0.85)))
         _ai["shade"] = sh
     im = Image.composite(Image.new("RGB", (W, H), (4, 8, 22)), im, _ai["shade"])
@@ -1177,7 +1177,8 @@ def render_scene(sc, lt, dur, t_abs):
 
 # ------------------------------------------------------------------ captions & chrome
 
-CAP_CY = 1470  # safe zone: above the Shorts UI (channel name / buttons)
+CAP_CY = 1340  # safe zone: above the Shorts UI (channel handle sits at ~y1440-1520, title below)
+CONTENT_MAX = 1250  # scene content must end above the caption pill (CAP_CY - 75)
 
 
 def draw_chrome(im, t, full, chunks, th):
