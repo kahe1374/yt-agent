@@ -1,0 +1,63 @@
+{
+  "title": "Google Quick Share Integration Coming to Apps Next Year",
+  "description": "Google will let Android and iOS apps directly integrate Quick Share starting next year. Source: 9to5Google Short tech news summary.",
+  "keywords": [
+    "Google",
+    "Quick Share",
+    "Android",
+    "iOS",
+    "file sharing"
+  ],
+  "tags": [
+    "Google",
+    "Quick Share",
+    "Android",
+    "iOS",
+    "file sharing",
+    "tech news",
+    "9to5Google",
+    "app integration"
+  ],
+  "narration": "Google is opening Quick Share directly to apps next year. This changes how files move between phones. Android and iOS apps will integrate Quick Share directly. The feature arrives next year. No separate app needed for file transfers between devices. Developers can now build Quick Share right into their own apps for seamless sharing across all devices and platforms. Cross-platform sharing gets much simpler for everyone using Android or iPhone devices every day. Google expands Quick Share beyond the system level into individual applications starting next year for both platforms. Subscribe for more tech updates daily.",
+  "scenes": [
+    {
+      "type": "hook",
+      "headline": "Google Opens Quick Share to Apps",
+      "accent": null,
+      "voice": "Google is opening Quick Share directly to apps next year. This changes how files move between phones."
+    },
+    {
+      "type": "cards",
+      "heading": "Key Details",
+      "items": [
+        "Android and iOS apps get direct access",
+        "Quick Share integration arrives next year",
+        "No separate app needed for file transfers"
+      ],
+      "voice": "Android and iOS apps will integrate Quick Share directly. The feature arrives next year. No separate app needed for file transfers between devices."
+    },
+    {
+      "type": "statement",
+      "headline": "Developers Can Build Quick Share Into Apps",
+      "accent": "Developers",
+      "voice": "Developers can now build Quick Share right into their own apps for seamless sharing across all devices and platforms."
+    },
+    {
+      "type": "statement",
+      "headline": "Cross Platform Sharing Gets Much Simpler",
+      "accent": "Simpler",
+      "voice": "Cross-platform sharing gets much simpler for everyone using Android or iPhone devices every day."
+    },
+    {
+      "type": "statement",
+      "headline": "Google Expands Quick Share Beyond System Level",
+      "accent": "Expands",
+      "voice": "Google expands Quick Share beyond the system level into individual applications starting next year for both platforms."
+    },
+    {
+      "type": "cta",
+      "headline": "Follow for daily tech news",
+      "voice": "Subscribe for more tech updates daily."
+    }
+  ]
+}
