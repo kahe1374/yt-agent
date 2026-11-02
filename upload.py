@@ -3,7 +3,7 @@ import os
 
 import requests
 
-OUT = "output"
+OUT = os.environ.get("OUT_DIR", "output")
 CLIENT_ID = os.environ["YT_CLIENT_ID"]
 CLIENT_SECRET = os.environ["YT_CLIENT_SECRET"]
 REFRESH_TOKEN = os.environ["YT_REFRESH_TOKEN"]
@@ -49,6 +49,13 @@ def main():
     token = get_access_token()
 
     description = data.get("description", "").strip()
+    try:
+        with open(f"{OUT}/credits.json", encoding="utf-8") as f:
+            credits = [str(c) for c in json.load(f)]
+        if credits:
+            description += "\n\nImage credits:\n" + "\n".join(credits)
+    except FileNotFoundError:
+        pass
     description += "\n\nNarrated with an AI-generated voice."
     body = {
         "snippet": {
