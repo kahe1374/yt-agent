@@ -17,6 +17,9 @@ API_KEY = os.environ["OPENROUTER_API_KEY"]
 VOICE = os.environ.get("VOICE", "en-US-AriaNeural")
 RATE = os.environ.get("RATE", "+0%")
 OUT = "output"
+# Focus on a narrower niche: prefer stories mentioning these words (set NICHE_KEYWORDS to change; empty = any story)
+NICHE_KEYWORDS = [k.strip().lower() for k in (os.environ.get("NICHE_KEYWORDS") or
+    "ai,openai,chatgpt,gemini,claude,nvidia,apple,iphone,macbook,google,android,pixel,samsung,microsoft,windows,meta,tesla").split(",") if k.strip()]
 SCENE_TYPES = {"hook", "stat", "cards", "statement", "cta"}
 
 SYSTEM_PROMPT = """You write short vertical videos for a faceless English YouTube channel about technology news.
@@ -27,6 +30,12 @@ STRICT RULES
 - Attribute claims to the source when you can ("according to The Verge", "Ars Technica reports").
 - If the text is thin, keep the video shorter and stay vague rather than inventing details.
 - Plain ASCII English only. No emojis, no markdown, no hashtags.
+
+STYLE (what works on YouTube Shorts)
+- Title: phrase it like something people search for or ask, with the product/company name first, e.g. "Is Apple Killing Touch-Screen MacBooks?" or "Google Pixel Update: What Changed?". Max 70 characters. Never invent a claim in the title; it must be supported by the text.
+- First spoken sentence: max 10 words, creates curiosity or states the surprising fact, and does NOT give away the full answer. No greetings, no channel name, no "welcome", no "today we".
+- Keep the whole story moving: one new fact or idea every sentence. No filler, no repeating the headline.
+- Description: first line is a one-sentence summary, second line "Source: <outlet name>", third line says this is a short news summary.
 
 OUTPUT: one valid JSON object, nothing else, no code fences:
 {
@@ -39,7 +48,7 @@ OUTPUT: one valid JSON object, nothing else, no code fences:
     {"type":"stat","value":"a number from the text, e.g. $2,000 or 12 million","label":"max 8 words saying what the number is","voice":"spoken sentence(s)"},
     {"type":"cards","heading":"max 5 words","items":["fact 1 (max 9 words)","fact 2","fact 3"],"voice":"spoken sentence(s)"},
     {"type":"statement","headline":"a complete grammatical sentence of 5-9 words, readable on its own (never a fragment like \"Weigh Upgrade Needs\")","accent":"one word from the headline","voice":"spoken sentence(s)"},
-    {"type":"cta","headline":"Follow for daily tech news","voice":"one short outro sentence, max 12 words"}
+    {"type":"cta","headline":"Follow for daily tech news","voice":"one short outro sentence, max 12 words, asks the viewer to subscribe"}
   ]
 }
 
@@ -48,7 +57,7 @@ SCENE PLAN
 - Use a stat scene ONLY if the source text contains a real number or amount. Otherwise do not use stat.
 - Use at most one cards scene, with exactly 3 items, all facts from the text.
 - Fill the rest with statement scenes.
-- The "voice" of all scenes together is the full narration: 130 to 180 words, conversational, strong hook in the first sentence, simple words, short sentences.
+- The "voice" of all scenes together is the full narration: 100 to 140 words (about 40 to 55 seconds), conversational, strong hook in the first sentence, simple words, short sentences.
 - The on-screen text (headline/label/items) must match what the voice says in that scene."""
 
 
@@ -66,7 +75,10 @@ def get_news(limit=8):
 
 def news_prompt(items):
     n = min(6, len(items))
-    focus = datetime.date.today().toordinal() % n
+    day = datetime.date.today().toordinal()
+    niche = [i for i, (t, _src, sm) in enumerate(items[:n])
+             if NICHE_KEYWORDS and any(re.search(r"\b" + re.escape(k) + r"\b", (t + " " + sm).lower()) for k in NICHE_KEYWORDS)]
+    focus = niche[day % len(niche)] if niche else day % n
     lines = []
     for i, (title, src, summ) in enumerate(items):
         tag = "  <== FOCUS" if i == focus else ""
