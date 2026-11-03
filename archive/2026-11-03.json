@@ -1,0 +1,62 @@
+{
+  "title": "Windows 11 Up to 40% Faster on 8GB RAM PCs",
+  "description": "Windows 11 gains up to 40% speed boost on 8GB RAM PCs. Source: The Verge Short news summary.",
+  "keywords": [
+    "Windows 11",
+    "performance",
+    "8GB RAM",
+    "Microsoft",
+    "The Verge"
+  ],
+  "tags": [
+    "Windows 11",
+    "performance",
+    "8GB RAM",
+    "Microsoft",
+    "The Verge",
+    "PC upgrades",
+    "OS updates"
+  ],
+  "narration": "Windows 11 just got 40% faster on 8GB RAM. The update targets 8GB machines worldwide. That's up to a 40 percent speed boost. Microsoft says this helps modest RAM systems. The Verge also notes the improvements are noticeable in everyday tasks. Windows 11 up to 40% faster on 8GB RAM. Microsoft listed concrete ways Windows 11 improves with 8GB. The Verge reported performance boost for 8GB systems. The improvement targets PCs with only 8GB of RAM. Users will notice quicker load times. These optimizations include better memory management and faster startup. The changes are designed for 8GB configurations. Subscribe for more tech updates and quick news bites.",
+  "scenes": [
+    {
+      "type": "hook",
+      "headline": "Windows 11 performance boost",
+      "accent": "performance",
+      "voice": "Windows 11 just got 40% faster on 8GB RAM. The update targets 8GB machines worldwide."
+    },
+    {
+      "type": "statement",
+      "headline": "That's up to a 40 percent speed boost. Microsoft says this h",
+      "voice": "That's up to a 40 percent speed boost. Microsoft says this helps modest RAM systems. The Verge also notes the improvements are noticeable in everyday tasks."
+    },
+    {
+      "type": "cards",
+      "heading": "Key Windows 11 improvements",
+      "items": [
+        "Windows 11 up to 40% faster on 8GB RAM",
+        "Microsoft listed concrete ways Windows 11 improves with 8GB",
+        "The Verge reported performance boost for 8GB systems"
+      ],
+      "voice": "Windows 11 up to 40% faster on 8GB RAM. Microsoft listed concrete ways Windows 11 improves with 8GB. The Verge reported performance boost for 8GB systems."
+    },
+    {
+      "type": "statement",
+      "headline": "Windows 11 now runs faster on modest RAM",
+      "accent": "faster",
+      "voice": "The improvement targets PCs with only 8GB of RAM. Users will notice quicker load times."
+    },
+    {
+      "type": "statement",
+      "headline": "Microsoft highlighted concrete optimizations",
+      "accent": "optimizations",
+      "voice": "These optimizations include better memory management and faster startup. The changes are designed for 8GB configurations."
+    },
+    {
+      "type": "cta",
+      "headline": "Follow for daily tech news",
+      "accent": "news",
+      "voice": "Subscribe for more tech updates and quick news bites."
+    }
+  ]
+}
