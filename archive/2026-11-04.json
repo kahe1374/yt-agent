@@ -1,0 +1,72 @@
+{
+  "title": "Anker Window Camera News",
+  "description": "Anker new window-mounted camera monitors outside from inside your home. iPhone in Canada cannot mount a camera.",
+  "keywords": [
+    "anker",
+    "window",
+    "camera",
+    "tech",
+    "news"
+  ],
+  "tags": [
+    "anker",
+    "camera",
+    "tech",
+    "news",
+    "eufy"
+  ],
+  "narration": "Anker makes a new window camera. The camera monitors the outside from inside your home. E10 has indoor mount and outdoor view your home. iPhone in Canada cannot mount a camera. Anker window camera monitors outside from inside your home. iPhone in Canada cannot mount a camera in Canada. Anker window camera monitors outside from inside your home. Anker makes a window camera for your home. iPhone in Canada cannot mount a camera. Please subscribe for daily tech news and updates every single day now.",
+  "scenes": [
+    {
+      "type": "hook",
+      "headline": "Anker makes a new window camera.",
+      "accent": "Anker",
+      "voice": "Anker makes a new window camera."
+    },
+    {
+      "type": "statement",
+      "headline": "The camera monitors the outside from inside your home.",
+      "accent": "camera",
+      "voice": "The camera monitors the outside from inside your home."
+    },
+    {
+      "type": "cards",
+      "heading": "Camera Features",
+      "items": [
+        "E10 has indoor mount and outdoor view your home.",
+        "iPhone in Canada cannot mount a camera.",
+        "Anker window camera monitors outside from inside your home."
+      ],
+      "voice": "E10 has indoor mount and outdoor view your home. iPhone in Canada cannot mount a camera. Anker window camera monitors outside from inside your home."
+    },
+    {
+      "type": "statement",
+      "headline": "iPhone in Canada cannot mount a camera in Canada.",
+      "accent": null,
+      "voice": "iPhone in Canada cannot mount a camera in Canada."
+    },
+    {
+      "type": "statement",
+      "headline": "Anker window camera monitors outside from inside your home.",
+      "accent": "Anker",
+      "voice": "Anker window camera monitors outside from inside your home."
+    },
+    {
+      "type": "statement",
+      "headline": "Anker makes a window camera for your home.",
+      "accent": "Anker",
+      "voice": "Anker makes a window camera for your home."
+    },
+    {
+      "type": "statement",
+      "headline": "iPhone in Canada cannot mount a camera.",
+      "accent": null,
+      "voice": "iPhone in Canada cannot mount a camera."
+    },
+    {
+      "type": "cta",
+      "headline": "Follow for daily tech news",
+      "voice": "Please subscribe for daily tech news and updates every single day now."
+    }
+  ]
+}
