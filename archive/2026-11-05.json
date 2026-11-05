@@ -1,0 +1,57 @@
+{
+  "title": "Meta Muse AI Avatar Video Chat Now Available",
+  "description": "Meta adds video chat and voice mode to its Muse AI app for users in the United States. Source: TechCrunch, The Verge This is a short news summary.",
+  "keywords": [
+    "Meta",
+    "Muse",
+    "AI",
+    "voice",
+    "chat"
+  ],
+  "tags": [
+    "Meta Muse",
+    "AI avatar",
+    "video chat",
+    "voice mode",
+    "TechCrunch",
+    "The Verge",
+    "tech news",
+    "Meta AI"
+  ],
+  "narration": "Meta's Muse app now lets you video chat with AI. According to TechCrunch, US users can now video chat with their Muse AI avatar. The Verge reports that Muse has a voice mode now. Meta also adds real-time voice chat and animated avatars to its Muse app. The Verge says Muse now has a voice mode. Real-time voice chat and animated avatars are added to the app. TechCrunch says the video chat feature is for US users. Meta says these updates are for the Muse AI app. The feature is available to users in the United States. Subscribe for more daily tech news and updates.",
+  "scenes": [
+    {
+      "type": "hook",
+      "headline": "Meta Muse Video Chat",
+      "accent": "Muse",
+      "voice": "Meta's Muse app now lets you video chat with AI."
+    },
+    {
+      "type": "cards",
+      "heading": "Muse App Updates",
+      "items": [
+        "US users can video chat with Muse avatar",
+        "Muse now has a voice mode",
+        "Real-time voice chat and animated avatars added"
+      ],
+      "voice": "According to TechCrunch, US users can now video chat with their Muse AI avatar. The Verge reports that Muse has a voice mode now. Meta also adds real-time voice chat and animated avatars to its Muse app."
+    },
+    {
+      "type": "statement",
+      "headline": "The Verge says Muse now has a voice mode.",
+      "accent": "voice",
+      "voice": "The Verge says Muse now has a voice mode. Real-time voice chat and animated avatars are added to the app."
+    },
+    {
+      "type": "statement",
+      "headline": "TechCrunch says the feature is for US users.",
+      "accent": "users",
+      "voice": "TechCrunch says the video chat feature is for US users. Meta says these updates are for the Muse AI app. The feature is available to users in the United States."
+    },
+    {
+      "type": "cta",
+      "headline": "Follow for daily tech news",
+      "voice": "Subscribe for more daily tech news and updates."
+    }
+  ]
+}
