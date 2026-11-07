@@ -1,0 +1,68 @@
+{
+  "title": "Apple Black Friday Deals Offer Steep Discounts",
+  "description": "Apple's early Black Friday deals discount Apple Watch Ultra, AirTags, iPads and MacBooks. Source: MacRumors This is a short news summary.",
+  "keywords": [
+    "Apple",
+    "BlackFriday",
+    "Deals",
+    "Tech"
+  ],
+  "tags": [
+    "Apple",
+    "BlackFriday",
+    "Deals",
+    "TechNews",
+    "MacRumors",
+    "WatchUltra",
+    "AirTags",
+    "iPad"
+  ],
+  "narration": "What's getting a steep discount this week? Apple is offering steep price cuts on popular devices. Apple's early deals are offered. Apple Watch Ultra gets steep discount, AirTags receive price cut, iPads and MacBooks are on sale during early Black Friday. These promotions start now. These deals are live. Apple deals bring big savings. Apple's discounts apply to many products. Watch Ultra leads discounted lineup. The discount highlights the Ultra model. Apple's deals are highlighted during early Black Friday. Customers can save on wearable tech and accessories. Apple's early deals are offered. These promotions start now. Subscribe now for daily tech updates. Tap the link to subscribe for more updates.",
+  "scenes": [
+    {
+      "type": "hook",
+      "headline": "Apple Black Friday Deals",
+      "accent": "Deals",
+      "voice": "What's getting a steep discount this week? Apple is offering steep price cuts on popular devices. Apple's early deals are offered."
+    },
+    {
+      "type": "cards",
+      "heading": "Apple Black Friday Discounts",
+      "items": [
+        "Apple Watch Ultra gets steep discount",
+        "AirTags receive price cut",
+        "iPads and MacBooks are on sale during early Black Friday"
+      ],
+      "voice": "Apple Watch Ultra gets steep discount, AirTags receive price cut, iPads and MacBooks are on sale during early Black Friday. These promotions start now. These deals are live."
+    },
+    {
+      "type": "statement",
+      "headline": "Apple deals bring big savings",
+      "accent": "Apple",
+      "voice": "Apple deals bring big savings. Apple's discounts apply to many products."
+    },
+    {
+      "type": "statement",
+      "headline": "Watch Ultra leads discounted lineup",
+      "accent": "Ultra",
+      "voice": "Watch Ultra leads discounted lineup. The discount highlights the Ultra model."
+    },
+    {
+      "type": "statement",
+      "headline": "Apple's deals are highlighted during early Black Friday",
+      "accent": "Apple's",
+      "voice": "Apple's deals are highlighted during early Black Friday. Customers can save on wearable tech and accessories."
+    },
+    {
+      "type": "statement",
+      "headline": "Apple's early deals are popular",
+      "accent": "Apple's",
+      "voice": "Apple's early deals are offered. These promotions start now."
+    },
+    {
+      "type": "cta",
+      "headline": "Follow for daily tech news",
+      "voice": "Subscribe now for daily tech updates. Tap the link to subscribe for more updates."
+    }
+  ]
+}
