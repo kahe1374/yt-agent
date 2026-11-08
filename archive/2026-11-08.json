@@ -1,0 +1,59 @@
+{
+  "title": "Apple iOS 28 Development Adds 50% Coding Time",
+  "description": "Apple is taking a new approach to iOS 28 development, adding Agentic Siri and 50% more coding time. Source: MacRumors Short news summary.",
+  "keywords": [
+    "Apple",
+    "iOS28",
+    "Agentic Siri",
+    "coding",
+    "MacRumors"
+  ],
+  "tags": [
+    "iOS",
+    "macOS",
+    "Apple",
+    "Siri",
+    "development",
+    "FourWeekMBA",
+    "tech news"
+  ],
+  "narration": "Apple iOS 28 development is getting 50% slower. According to MacRumors, Apple is taking a new approach to developing iOS 28 and macOS 28. The new approach includes adding Agentic Siri to iOS 28. MacRumors also reports the changes cover both iOS and macOS platforms. FourWeekMBA reports the iOS 28 stage now requires 50% more coding time. The extra coding time is linked to the addition of Agentic Siri. Apple says the schedule shift helps engineers manage the new workload. The new development approach also includes updates for macOS 28. The schedule shift is designed to help engineers handle the increased coding demands. Apple is also focusing on macOS 28 improvements. The new approach extends to macOS 28, adding Agentic Siri and extra coding demands. Subscribe for more tech updates every day. Join us for the latest Apple news.",
+  "scenes": [
+    {
+      "type": "hook",
+      "headline": "Apple iOS 28 Development Changes",
+      "accent": "Development",
+      "voice": "Apple iOS 28 development is getting 50% slower."
+    },
+    {
+      "type": "statement",
+      "headline": "Apple adds Agentic Siri to iOS 28.",
+      "accent": "Agentic",
+      "voice": "According to MacRumors, Apple is taking a new approach to developing iOS 28 and macOS 28. The new approach includes adding Agentic Siri to iOS 28. MacRumors also reports the changes cover both iOS and macOS platforms."
+    },
+    {
+      "type": "statement",
+      "headline": "iOS 28 coding time increased by 50%.",
+      "accent": "coding",
+      "voice": "FourWeekMBA reports the iOS 28 stage now requires 50% more coding time. The extra coding time is linked to the addition of Agentic Siri. Apple says the schedule shift helps engineers manage the new workload."
+    },
+    {
+      "type": "statement",
+      "headline": "Apple's iOS 28 schedule shift helps engineers.",
+      "accent": "schedule",
+      "voice": "The new development approach also includes updates for macOS 28. The schedule shift is designed to help engineers handle the increased coding demands. Apple is also focusing on macOS 28 improvements."
+    },
+    {
+      "type": "statement",
+      "headline": "macOS 28 also gets new development approach.",
+      "accent": "macOS",
+      "voice": "The new approach extends to macOS 28, adding Agentic Siri and extra coding demands."
+    },
+    {
+      "type": "cta",
+      "headline": "Follow for daily tech news",
+      "accent": "Follow",
+      "voice": "Subscribe for more tech updates every day. Join us for the latest Apple news."
+    }
+  ]
+}
