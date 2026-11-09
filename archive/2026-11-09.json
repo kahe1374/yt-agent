@@ -1,0 +1,51 @@
+{
+  "title": "Apple's $50 Intelligence Usage Packs for Some AI Features",
+  "description": "Apple's $50 Intelligence Usage Packs extend access to some AI features. Source: The Verge This is a short news summary.",
+  "keywords": [
+    "Apple Intelligence",
+    "$50 Usage Packs",
+    "AI Features",
+    "The Verge",
+    "Apple"
+  ],
+  "tags": [
+    "Apple Intelligence",
+    "Apple AI",
+    "Usage Packs",
+    "AI Features",
+    "The Verge",
+    "Tech News"
+  ],
+  "narration": "Apple made AI access cost fifty. The new packs cost fifty dollars too. They are usage packs. The Verge reports Apple launched fifty dollar Intelligence Usage Packs. They extend access to some AI features. The packs are for select AI features. 9to5Mac reports the fifty dollar packs are for select AI features. The packs are called Intelligence Usage Packs. According to The Verge, Apple launched the fifty dollar packs. According to 9to5Mac, they are for select AI features. The packs extend access to some AI features. The packs cost fifty dollars. Follow and subscribe for daily tech news now.",
+  "scenes": [
+    {
+      "type": "hook",
+      "headline": "Apple Made AI Access Cost Fifty",
+      "accent": "Fifty",
+      "voice": "Apple made AI access cost fifty. The new packs cost fifty dollars too. They are usage packs."
+    },
+    {
+      "type": "statement",
+      "headline": "Fifty Dollar Packs",
+      "accent": "Packs",
+      "voice": "The Verge reports Apple launched fifty dollar Intelligence Usage Packs. They extend access to some AI features. The packs are for select AI features."
+    },
+    {
+      "type": "statement",
+      "headline": "Select AI Features",
+      "accent": "AI",
+      "voice": "9to5Mac reports the fifty dollar packs are for select AI features. The packs are called Intelligence Usage Packs."
+    },
+    {
+      "type": "statement",
+      "headline": "The Packs Cost Fifty",
+      "accent": "Fifty",
+      "voice": "According to The Verge, Apple launched the fifty dollar packs. According to 9to5Mac, they are for select AI features. The packs extend access to some AI features. The packs cost fifty dollars."
+    },
+    {
+      "type": "cta",
+      "headline": "Follow for daily tech news",
+      "voice": "Follow and subscribe for daily tech news now."
+    }
+  ]
+}
