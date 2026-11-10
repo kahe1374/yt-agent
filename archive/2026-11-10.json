@@ -1,0 +1,51 @@
+{
+  "title": "Google Android 17 QPR2 Rolling Out Now",
+  "description": "Google is rolling out Android 17 QPR2 for Pixel. Source: 9to5Google This is a short news summary.",
+  "keywords": [
+    "Android 17",
+    "Google Pixel",
+    "QPR2",
+    "Android update",
+    "Pixel update"
+  ],
+  "tags": [
+    "Android 17",
+    "Android QPR2",
+    "Google Pixel",
+    "Pixel update",
+    "Android update",
+    "Tech News"
+  ],
+  "narration": "Google Android 17 QPR2 is rolling out now. This is the next Android update for Pixel phones. The update is called Android 17 QPR2. It is for Pixel devices. Google is rolling it out now. Users can get it now. The update brings bug fixes. It is rolling out now. The rollout is happening now. This is a Google release. The source is 9to5Google. The update is for Pixel. It fixes bugs. Google is rolling out Android 17 QPR2. The November Pixel update packs dozens of bug fixes. You can get Android 17 QPR2 now. Follow for daily tech news and subscribe now.",
+  "scenes": [
+    {
+      "type": "hook",
+      "headline": "Google Android 17 QPR2",
+      "accent": "Android",
+      "voice": "Google Android 17 QPR2 is rolling out now. This is the next Android update for Pixel phones. The update is called Android 17 QPR2. It is for Pixel devices. Google is rolling it out now. Users can get it now. The update brings bug fixes. It is rolling out now. The rollout is happening now. This is a Google release. The source is 9to5Google. The update is for Pixel. It fixes bugs."
+    },
+    {
+      "type": "statement",
+      "headline": "Google is rolling out Android 17 QPR2.",
+      "accent": "rolling",
+      "voice": "Google is rolling out Android 17 QPR2."
+    },
+    {
+      "type": "statement",
+      "headline": "The November Pixel update packs dozens of bug fixes.",
+      "accent": "Pixel",
+      "voice": "The November Pixel update packs dozens of bug fixes."
+    },
+    {
+      "type": "statement",
+      "headline": "You can get Android 17 QPR2 now.",
+      "accent": "get",
+      "voice": "You can get Android 17 QPR2 now."
+    },
+    {
+      "type": "cta",
+      "headline": "Follow for daily tech news",
+      "voice": "Follow for daily tech news and subscribe now."
+    }
+  ]
+}
