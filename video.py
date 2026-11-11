@@ -1651,19 +1651,22 @@ def prepare_scenes(data):
         _fonts.clear()
     print("layout:", LAYOUT, os.path.basename(FONT_PATH))
     ctx = " ".join(s.get("voice", "") for s in scenes) + " " + " ".join(data.get("keywords", []))
-    prev_th, prev_decor, st_alt = None, None, 0
+    # every scene gets a different palette and background style; cycle through shuffled lists
+    # so one video shows as many looks as possible (no repeats until the list runs out)
+    pal_cycle = list(THEMES)
+    rng.shuffle(pal_cycle)
+    decor_cycle = list(DECORS)
+    rng.shuffle(decor_cycle)
+    prev_th = None
     for i, s in enumerate(scenes):
-        th = prefer.get(s["type"])
-        if th is None:
-            th = names[2] if st_alt % 2 else names[1]
-            st_alt += 1
+        th = pal_cycle[i % len(pal_cycle)]
         if th == prev_th:
-            th = rng.choice([x for x in THEMES if x != prev_th])
-        decor = rng.choice([x for x in DECORS if x != prev_decor])
+            th = pal_cycle[(i + 1) % len(pal_cycle)]
+        decor = decor_cycle[i % len(decor_cycle)]
         s["_pal"], s["_style"], s["_seed"] = th, decor, rng.randint(0, 9)
         s["_title"] = data.get("title", "")
         s["_context"] = ctx
-        prev_th, prev_decor = th, decor
+        prev_th = th
     got_ai = attach_images(scenes, data, seed)
     got_real = attach_commons(scenes, data)
     if got_ai or got_real:
