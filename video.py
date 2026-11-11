@@ -66,13 +66,18 @@ def clamp(x, a=0.0, b=1.0):
     return max(a, min(b, x))
 
 
+# easing curves; main() picks new values per video so motion feels different from one video to the next
+MOTION = {"pow": 3, "back_k": 1.9}
+
+
 def e_out(x):
     x = clamp(x)
-    return 1 - (1 - x) ** 3
+    return 1 - (1 - x) ** MOTION["pow"]
 
 
-def e_back(x, k=1.9):
+def e_back(x, k=None):
     x = clamp(x)
+    k = MOTION["back_k"] if k is None else k
     return 1 + (k + 1) * (x - 1) ** 3 + k * (x - 1) ** 2
 
 
@@ -196,7 +201,7 @@ THEMES = {
                  dark=True, pill=(244, 114, 182), pill_fg=(30, 4, 20)),
 }
 HUE = {"deg": 0.0}
-LAYOUT = {"cap": 0, "trans": 0, "hook": 0, "cards": 0, "card": 0, "news": 0, "stat": 0, "quote": 0, "align": 0, "kick": 0, "brand": 0, "family": 0}
+LAYOUT = {"cap": 0, "trans": 0, "cin": 0, "hook": 0, "cards": 0, "card": 0, "news": 0, "stat": 0, "quote": 0, "align": 0, "kick": 0, "brand": 0, "family": 0}
 
 
 def hue_rotate(im, deg):
@@ -209,7 +214,8 @@ def hue_rotate(im, deg):
     return im.convert("RGB", m)
 
 
-DECORS = ["blobs", "grid", "rings", "floaters", "beams", "dots", "stripes", "waves", "halftone", "checker"]
+DECORS = ["blobs", "grid", "rings", "floaters", "beams", "dots", "stripes", "waves", "halftone", "checker",
+          "arcs", "spotlight", "diagonal", "scan", "bigword", "confetti"]
 
 
 # ------------------------------------------------------------------ backgrounds
@@ -318,6 +324,42 @@ def background(theme, decor, t, seed=0):
                 if (gx + gy) % 2 == 0:
                     x0, y0 = gx * step + ox, gy * step
                     d.rectangle([x0, y0, x0 + step, y0 + step], fill=c1)
+    elif decor == "arcs":
+        for k in range(6):
+            r = 520 + 240 * k + 40 * math.sin(t * 0.5 + k)
+            cx_ = W * (0.15 + 0.7 * ((k * 0.37) % 1))
+            cy_ = H * (0.2 + 0.6 * ((k * 0.61) % 1))
+            a0 = (t * 25 + k * 60) % 360
+            d.arc([cx_ - r, cy_ - r, cx_ + r, cy_ + r], start=a0, end=a0 + 110, fill=c1 if k % 2 else c2, width=18)
+    elif decor == "spotlight":
+        key = ("blob", 900)
+        if key not in _cache:
+            _cache[key] = _blob_sprite(900)
+        sp = _cache[key]
+        gx_ = W * (0.5 + 0.35 * math.sin(t * 0.4 + seed))
+        gy_ = H * (0.35 + 0.2 * math.cos(t * 0.3))
+        im.paste(Image.new("RGB", sp.size, c1), (int(gx_ - 900), int(gy_ - 900)), sp.point(lambda v_: int(v_ * 0.8)))
+    elif decor == "diagonal":
+        step = 90
+        off = (t * 30) % (step * 2)
+        for k in range(-H // step - 4, W // step + H // step + 4):
+            x0 = k * step + off
+            d.line([(x0, 0), (x0 + H, H)], fill=c1 if k % 2 else c2, width=6)
+    elif decor == "scan":
+        for y_ in range(0, H, 12):
+            d.line([(0, y_), (W, y_)], fill=c1, width=2)
+        by_ = (t * 240) % (H + 400) - 200
+        d.rectangle([0, by_, W, by_ + 8], fill=c2)
+    elif decor == "bigword":
+        d.text((W / 2, H * 0.5), "NEWS", font=font(400), fill=c1, anchor="mm", stroke_width=6, stroke_fill=c2)
+    elif decor == "confetti":
+        rnd = np.random.RandomState(seed + 11)
+        for i in range(40):
+            bx = int(rnd.randint(0, W))
+            by = int(rnd.randint(0, H))
+            s_ = int(rnd.randint(10, 26))
+            y_ = (by + t * 40 * (1 + i % 3)) % H
+            d.rectangle([bx, y_, bx + s_, y_ + s_ * 0.4], fill=c1 if i % 2 else c2)
     else:  # dots
         step = 74
         for gy in range(0, H + step, step):
@@ -498,9 +540,59 @@ def glass_panel(im, x, y, w, h, radius, tint=(255, 255, 255), amt=0.16):
     d.rounded_rectangle([x + 3, y + 3, x + w - 3, y + h - 3], radius=max(2, radius - 3), outline=(150, 200, 240), width=1)
 
 
+def _card_extra(im, x, y, w, h, T, st, radius):
+    """Card shapes 4 to 9 (the first four are handled inside card())."""
+    d = ImageDraw.Draw(im)
+    acc = T["pill"]
+    if st == 4:  # sharp corners with an accent bar on the left
+        d.rectangle([x, y, x + w, y + h], fill=T["card"])
+        d.rectangle([x, y, x + 10, y + h], fill=acc)
+    elif st == 5:  # solid offset block behind the card
+        d.rounded_rectangle([x + 16, y + 16, x + w + 16, y + h + 16], radius=radius, fill=acc)
+        d.rounded_rectangle([x, y, x + w, y + h], radius=radius, fill=T["card"])
+    elif st == 6:  # notched corners, like a ticket
+        c = 36
+        pts = [(x + c, y), (x + w - c, y), (x + w, y + c), (x + w, y + h - c),
+               (x + w - c, y + h), (x + c, y + h), (x, y + h - c), (x, y + c)]
+        d.polygon(pts, fill=T["card"], outline=acc, width=5)
+    elif st == 7:  # double frame
+        d.rounded_rectangle([x, y, x + w, y + h], radius=radius, fill=T["card"], outline=acc, width=6)
+        d.rounded_rectangle([x + 20, y + 20, x + w - 20, y + h - 20], radius=max(4, radius - 16),
+                            outline=(255, 255, 255), width=2)
+    elif st == 8:  # coloured strip along the top edge
+        d.rounded_rectangle([x, y, x + w, y + h], radius=radius, fill=acc)
+        d.rounded_rectangle([x, y + 14, x + w, y + h], radius=radius, fill=T["card"])
+    elif st == 9:  # diagonal gradient fill
+        g, m = gradient_tile(w, h, T["card"], mix(T["card"], acc, 0.45), radius)
+        im.paste(g, (x, y), m)
+    elif st == 10:  # tab sticking out above the card
+        d.rounded_rectangle([x, y, x + w, y + h], radius=radius, fill=T["card"])
+        d.rounded_rectangle([x, y - 34, x + min(280, int(w * 0.45)), y + 6], radius=18, fill=acc)
+    elif st == 11:  # speech-bubble tail at the bottom left
+        d.rounded_rectangle([x, y, x + w, y + h], radius=radius, fill=T["card"])
+        d.polygon([(x + 60, y + h - 4), (x + 120, y + h - 4), (x + 46, y + h + 46)], fill=T["card"])
+    elif st == 12:  # polaroid: white frame with a thicker bottom edge
+        d.rounded_rectangle([x - 14, y - 14, x + w + 14, y + h + 62], radius=14, fill=(244, 244, 240))
+        d.rounded_rectangle([x, y, x + w, y + h], radius=6, fill=T["card"])
+    elif st == 13:  # neon outline with a soft glow
+        glow = mix(acc, T["card"], 0.55)
+        d.rounded_rectangle([x - 6, y - 6, x + w + 6, y + h + 6], radius=radius + 6, outline=glow, width=14)
+        d.rounded_rectangle([x, y, x + w, y + h], radius=radius, fill=T["card"], outline=acc, width=4)
+    elif st == 14:  # two-tone: coloured top band, card below
+        d.rounded_rectangle([x, y, x + w, y + h], radius=radius, fill=T["card"])
+        d.rounded_rectangle([x, y, x + w, y + int(h * 0.38)], radius=radius, fill=acc)
+    else:  # 15: stacked cards behind
+        d.rounded_rectangle([x + 18, y - 18, x + w + 18, y + h - 18], radius=radius, fill=mix(T["card"], acc, 0.30))
+        d.rounded_rectangle([x + 9, y - 9, x + w + 9, y + h - 9], radius=radius, fill=mix(T["card"], acc, 0.15))
+        d.rounded_rectangle([x, y, x + w, y + h], radius=radius, fill=T["card"])
+
+
 def card(im, x, y, w, h, T, radius=44):
     x, y, w, h = int(x), int(y), int(w), int(h)
     st = LAYOUT["card"]
+    if st >= 4:
+        _card_extra(im, x, y, w, h, T, st, radius)
+        return
     if st == 3:
         radius = int(min(radius * 2, h / 2))
     elif st == 2:
@@ -877,6 +969,7 @@ def _c0(T):
 
 
 def poster_panel(im, T, lt, top, bot, slant=90):
+    slant = LAYOUT.get("slant", slant)  # tilt of the panel differs per video
     p = e_out(lt / 0.5)
     ov = Image.new("RGBA", (W, H), (0, 0, 0, 0))
     od = ImageDraw.Draw(ov)
@@ -1300,7 +1393,9 @@ def photo_bg(sc, lt, dur):
 
 def render_scene(sc, lt, dur, t_abs):
     th = sc["_pal"]
-    im = photo_bg(sc, lt, dur) if sc.get("_img") else background(th, sc["_style"], t_abs, sc["_seed"])
+    # each scene's background moves at its own speed, so motion differs between scenes and videos
+    speed = 0.55 + 0.12 * (sc["_seed"] % 6)
+    im = photo_bg(sc, lt, dur) if sc.get("_img") else background(th, sc["_style"], t_abs * speed, sc["_seed"])
     d = ImageDraw.Draw(im)
     SCENES[sc["type"]](im, d, sc, THEMES[th], lt, dur)
     return im
@@ -1318,11 +1413,12 @@ def draw_chrome(im, t, full, chunks, th):
     bx = 60
     if LAYOUT["brand"] == 1:
         bx = int(W - 70 - 52 - 18 - font(32).getlength(CHANNEL))
-    d.rounded_rectangle([bx, 130, bx + 52, 182], radius=14, fill=ORANGE)
+    accent = T["pill"]  # every palette gets its own accent colour for logo, progress bar and highlights
+    d.rounded_rectangle([bx, 130, bx + 52, 182], radius=14, fill=accent)
     g = glyph("bolt", 30, (255, 255, 255))
     im.paste(g, (bx + 11, 141), g)
     d.text((bx + 70, 156), CHANNEL, font=font(32), fill=T["sub"], anchor="lm")
-    d.rectangle([0, 0, W * clamp(t / full), 10], fill=ORANGE)
+    d.rectangle([0, 0, W * clamp(t / full), 10], fill=accent)
     cur = None
     for c in chunks:
         if c["t0"] <= t < c["t1"]:
@@ -1336,7 +1432,15 @@ def draw_chrome(im, t, full, chunks, th):
     tw = sum(fnt.getlength(w) for w in words) + space * (len(words) - 1)
     pw, ph = tw + 90, 150
     p = e_back((t - cur["t0"]) / 0.22, 1.2)
-    cx, cy = (W - 70) / 2, CAP_CY + (1 - clamp(p, 0, 1)) * 40
+    pc = 1 - clamp(p, 0, 1)
+    cx, cy = (W - 70) / 2, CAP_CY
+    cin = LAYOUT.get("cin", 0)  # caption entrance: 0 rise, 1 drop, 2 appear, 3 slide from right
+    if cin == 0:
+        cy += pc * 40
+    elif cin == 1:
+        cy -= pc * 60
+    elif cin == 3:
+        cx += pc * 160
     cs = LAYOUT["cap"]
     if cs == 0:
         d.rounded_rectangle([cx - pw / 2, cy - ph / 2, cx + pw / 2, cy + ph / 2], radius=44, fill=(6, 14, 34),
@@ -1347,11 +1451,19 @@ def draw_chrome(im, t, full, chunks, th):
     for (w, a, b) in cur["words"]:
         wl = fnt.getlength(w)
         if a <= t < b:
-            d.rounded_rectangle([x - 16, cy - 56, x + wl + 16, cy + 56], radius=28, fill=ORANGE if cs != 3 else (34, 211, 238))
+            if cs == 4:  # no box: the spoken word gets an accent underline
+                d.rectangle([x - 6, cy + 46, x + wl + 6, cy + 60], fill=accent)
+            elif cs == 5:  # spoken word shown as a solid accent tag
+                d.rectangle([x - 10, cy - 52, x + wl + 10, cy + 52], fill=accent)
+            else:
+                d.rounded_rectangle([x - 16, cy - 56, x + wl + 16, cy + 56], radius=28, fill=accent if cs != 3 else T["pill"])
         if cs == 3:
             d.text((x, cy + 2), w, font=fnt, fill=(3, 12, 30) if a <= t < b else (255, 255, 255), anchor="lm",
                    stroke_width=0 if a <= t < b else 8, stroke_fill=(3, 10, 28))
-        elif cs == 2:
+        elif cs == 5:
+            d.text((x, cy + 2), w, font=fnt, fill=(3, 12, 30) if a <= t < b else (255, 255, 255), anchor="lm",
+                   stroke_width=0 if a <= t < b else 7, stroke_fill=(3, 10, 28))
+        elif cs in (2, 4):
             d.text((x, cy + 2), w, font=fnt, fill=(255, 255, 255), anchor="lm", stroke_width=9, stroke_fill=(20, 14, 26))
         else:
             d.text((x, cy + 2), w, font=fnt, fill=(255, 255, 255) if cs == 0 or a <= t < b else (28, 22, 32), anchor="lm")
@@ -1636,9 +1748,13 @@ def prepare_scenes(data):
     prefer = {"hook": names[0], "stat": names[1], "cards": names[2], "cta": names[1]}
     HUE["deg"] = rng.choice([0, 0, 0, 340, 20, 280, 60, 150, 200])
     print("hue shift:", HUE["deg"])
-    LAYOUT.update(cap=rng.randint(0, 3), trans=rng.randint(0, 3), hook=0, cards=0,
-                  card=rng.randint(0, 3), news=rng.randint(0, 2), stat=rng.randint(0, 2), quote=rng.randint(0, 2),
+    LAYOUT.update(cap=rng.randint(0, 5), trans=rng.randint(0, 4), cin=rng.randint(0, 3), hook=0, cards=0,
+                  card=rng.randint(0, 15), news=rng.randint(0, 2), stat=rng.randint(0, 2), quote=rng.randint(0, 2),
                   align=rng.randint(0, 1), kick=rng.randint(0, 2), brand=rng.randint(0, 1), family=rng.choice([0, 1, 2]))
+    # per-video motion: easing strength, bounce amount and the tilt of poster panels
+    MOTION.update(pow=rng.choice([2, 3, 4]), back_k=rng.choice([0.9, 1.9, 3.0]))
+    LAYOUT["slant"] = rng.choice([-110, 40, 90, 160])
+    print("motion:", MOTION, "slant:", LAYOUT["slant"])
     import glob
     fancy = [p for p in sorted(glob.glob("fonts/*.ttf") + glob.glob("fonts/*.otf")) if os.path.getsize(p) > 5000]
     CAP_FONT["path"] = rng.choice(fancy) if fancy else None
@@ -1738,6 +1854,10 @@ def main():
                 canvas = Image.new("RGB", (W, H))
                 canvas.paste(cur, (0, int(-H * 0.3 * p)))
                 canvas.paste(nxt, (0, int(H * (1 - p))))
+            elif tr == 4:
+                # wipe: the next scene is revealed from the left
+                canvas = cur.copy()
+                canvas.paste(nxt.crop((0, 0, max(1, int(W * p)), H)), (0, 0))
             else:
                 sc_ = 1.0 + 0.18 * (1 - p)
                 z = nxt.resize((int(W * sc_), int(H * sc_)), Image.BILINEAR)
