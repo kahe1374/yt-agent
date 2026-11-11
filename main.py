@@ -2,6 +2,7 @@ import asyncio
 import datetime
 import json
 import os
+import random
 import re
 import time
 
@@ -14,8 +15,13 @@ MODELS = [m.strip() for m in (os.environ.get("MODELS") or "google/gemma-4-26b-a4
 ).split(",") if m.strip()]
 EXTRA_MODELS = ["meta-llama/llama-3.3-70b-instruct:free", "qwen/qwen3-235b-a22b:free", "deepseek/deepseek-chat-v3.1:free"]
 API_KEY = os.environ["OPENROUTER_API_KEY"]
-VOICE = os.environ.get("VOICE", "en-US-AriaNeural")
-RATE = os.environ.get("RATE", "+0%")
+# A different narrator and pace per video (set VOICE / RATE env vars to pin one).
+VOICE_POOL = ["en-US-AriaNeural", "en-US-GuyNeural", "en-US-JennyNeural", "en-US-ChristopherNeural",
+              "en-US-EricNeural", "en-GB-RyanNeural", "en-GB-SoniaNeural", "en-AU-NatashaNeural", "en-AU-WilliamNeural"]
+RATE_POOL = ["-6%", "-3%", "+0%", "+4%", "+8%", "+12%"]
+VOICE = os.environ.get("VOICE") or random.choice(VOICE_POOL)
+RATE = os.environ.get("RATE") or random.choice(RATE_POOL)
+print("narrator:", VOICE, "rate:", RATE)
 OUT = "output"
 # Focus on a narrower niche: prefer stories mentioning these words (set NICHE_KEYWORDS to change; empty = any story)
 NICHE_KEYWORDS = [k.strip().lower() for k in (os.environ.get("NICHE_KEYWORDS") or
