@@ -1,0 +1,62 @@
+{
+  "title": "AMD Next-Gen Gaming CPUs: Intel's Hard Fight?",
+  "description": "Gizmodo says Intel will have a hard time beating AMD's next-gen gaming CPUs. Source: Gizmodo Short tech news summary.",
+  "keywords": [
+    "AMD",
+    "Intel",
+    "Gaming CPUs",
+    "Supermicro",
+    "EPYC"
+  ],
+  "tags": [
+    "AMD",
+    "Intel",
+    "Gaming CPUs",
+    "Supermicro",
+    "EPYC",
+    "Tech News",
+    "CPUs"
+  ],
+  "narration": "Intel will have a hard time beating AMD's gaming CPUs. According to Gizmodo, Intel will have a hard time beating AMD's next-generation gaming CPUs. Gizmodo points to AMD's next-gen gaming CPUs specifically. Supermicro is now shipping next-generation servers. These servers are powered by 6th Gen AMD EPYC 9006 Series CPUs. The listed workloads are cloud, HPC, and agentic AI. The AMD EPYC 9006 Series CPUs are 6th Gen server CPUs. Supermicro's next-generation servers are now powered by AMD EPYC CPUs. The listed workloads for these servers are cloud, HPC, and agentic AI. Subscribe for daily tech news and updates now.",
+  "scenes": [
+    {
+      "type": "hook",
+      "headline": "Intel vs AMD",
+      "accent": "AMD",
+      "voice": "Intel will have a hard time beating AMD's gaming CPUs."
+    },
+    {
+      "type": "statement",
+      "headline": "Gizmodo says Intel has a hard time.",
+      "accent": "Gizmodo",
+      "voice": "According to Gizmodo, Intel will have a hard time beating AMD's next-generation gaming CPUs. Gizmodo points to AMD's next-gen gaming CPUs specifically."
+    },
+    {
+      "type": "cards",
+      "heading": "Supermicro ships AMD servers",
+      "items": [
+        "Supermicro is shipping next-generation servers.",
+        "They use 6th Gen AMD EPYC CPUs.",
+        "Workloads include cloud, HPC, and agentic AI."
+      ],
+      "voice": "Supermicro is now shipping next-generation servers. These servers are powered by 6th Gen AMD EPYC 9006 Series CPUs. The listed workloads are cloud, HPC, and agentic AI."
+    },
+    {
+      "type": "stat",
+      "value": "6th Gen",
+      "label": "AMD EPYC server CPU generation",
+      "voice": "The AMD EPYC 9006 Series CPUs are 6th Gen server CPUs."
+    },
+    {
+      "type": "statement",
+      "headline": "Supermicro servers use AMD EPYC CPUs.",
+      "accent": "Supermicro",
+      "voice": "Supermicro's next-generation servers are now powered by AMD EPYC CPUs. The listed workloads for these servers are cloud, HPC, and agentic AI."
+    },
+    {
+      "type": "cta",
+      "headline": "Follow for daily tech news",
+      "voice": "Subscribe for daily tech news and updates now."
+    }
+  ]
+}
