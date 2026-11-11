@@ -179,6 +179,21 @@ THEMES = {
     "sun": dict(bg0=(4, 14, 36), bg1=(6, 58, 98), fg=(255, 255, 255), sub=(170, 210, 235),
                 accent=(45, 212, 191), accent2=(59, 130, 246), card=(10, 40, 72), cardfg=(255, 255, 255), dark=True,
                 pill=(45, 212, 191), pill_fg=(2, 14, 26)),
+    "violet": dict(bg0=(14, 4, 34), bg1=(52, 18, 96), fg=(255, 255, 255), sub=(205, 185, 240),
+                   accent=(192, 132, 252), accent2=(236, 72, 153), card=(34, 16, 66), cardfg=(255, 255, 255),
+                   dark=True, pill=(192, 132, 252), pill_fg=(20, 6, 40)),
+    "emerald": dict(bg0=(2, 22, 20), bg1=(6, 64, 58), fg=(255, 255, 255), sub=(180, 230, 215),
+                    accent=(52, 211, 153), accent2=(14, 165, 233), card=(8, 40, 38), cardfg=(255, 255, 255),
+                    dark=True, pill=(52, 211, 153), pill_fg=(2, 22, 18)),
+    "ember": dict(bg0=(24, 6, 6), bg1=(90, 26, 14), fg=(255, 255, 255), sub=(250, 205, 180),
+                  accent=(251, 146, 60), accent2=(239, 68, 68), card=(52, 18, 14), cardfg=(255, 255, 255),
+                  dark=True, pill=(251, 146, 60), pill_fg=(30, 10, 4)),
+    "gold": dict(bg0=(18, 14, 4), bg1=(70, 52, 10), fg=(255, 255, 255), sub=(240, 225, 180),
+                 accent=(250, 204, 21), accent2=(245, 158, 11), card=(44, 34, 10), cardfg=(255, 255, 255),
+                 dark=True, pill=(250, 204, 21), pill_fg=(26, 18, 2)),
+    "rose": dict(bg0=(26, 4, 18), bg1=(96, 14, 64), fg=(255, 255, 255), sub=(246, 200, 226),
+                 accent=(244, 114, 182), accent2=(168, 85, 247), card=(52, 12, 40), cardfg=(255, 255, 255),
+                 dark=True, pill=(244, 114, 182), pill_fg=(30, 4, 20)),
 }
 HUE = {"deg": 0.0}
 LAYOUT = {"cap": 0, "trans": 0, "hook": 0, "cards": 0, "card": 0, "news": 0, "stat": 0, "quote": 0, "align": 0, "kick": 0, "brand": 0, "family": 0}
@@ -1365,7 +1380,7 @@ def synth_music(length, seed):
     import random
     rng = random.Random(seed)
     style = rng.choice([0, 1, 2, 3, 4])  # 0 lofi beat, 1 ambient, 2 soft bells, 3 dreamy, 4 gentle pulse
-    bpm = rng.choice([66, 72, 78, 84, 90]) if style in (1, 3) else rng.choice([80, 84, 88, 92, 96, 100, 104, 108])
+    bpm = rng.choice([60, 66, 72, 78, 84, 90, 96]) if style in (1, 3) else rng.choice([76, 80, 84, 88, 92, 96, 100, 104, 108, 116, 120])
     kg = [0.5, 0.0, 0.3, 0.0, 0.4][style]
     hat_on = style in (0, 4)
     bass_g = [1.0, 0.45, 0.7, 0.45, 0.8][style]
@@ -1385,7 +1400,7 @@ def synth_music(length, seed):
         [[60, 63, 67, 70], [56, 60, 63, 67], [58, 62, 65, 70], [55, 58, 62, 65]],
         [[65, 69, 72, 76], [62, 65, 69, 72], [60, 64, 67, 72], [58, 62, 65, 69]],
     ]
-    shift = rng.randint(-5, 6)
+    shift = rng.randint(-8, 8)  # wider key range so beds differ between videos
     prog = [[n + shift for n in ch] for ch in rng.choice(progs)]
     arp_style = rng.randint(0, 2)
     hat_step = rng.choice([1, 1, 2])
@@ -1619,7 +1634,7 @@ def prepare_scenes(data):
     names = list(THEMES)
     rng.shuffle(names)
     prefer = {"hook": names[0], "stat": names[1], "cards": names[2], "cta": names[1]}
-    HUE["deg"] = rng.choice([0, 0, 0, 0, 340, 20])
+    HUE["deg"] = rng.choice([0, 0, 0, 340, 20, 280, 60, 150, 200])
     print("hue shift:", HUE["deg"])
     LAYOUT.update(cap=rng.randint(0, 3), trans=rng.randint(0, 3), hook=0, cards=0,
                   card=rng.randint(0, 3), news=rng.randint(0, 2), stat=rng.randint(0, 2), quote=rng.randint(0, 2),
