@@ -1,0 +1,57 @@
+{
+  "title": "Apple Trade-In Update: Samsung Foldables Added?",
+  "description": "Apple adjusted iPhone and Apple Watch trade-in values and added Samsung foldables to its program. Source: 9to5Mac This is a short news summary.",
+  "keywords": [
+    "Apple",
+    "trade-in",
+    "iPhone",
+    "Apple Watch",
+    "Samsung"
+  ],
+  "tags": [
+    "Apple trade-in",
+    "iPhone trade-in",
+    "Apple Watch trade-in",
+    "Samsung foldable",
+    "Apple trade-in program",
+    "tech news",
+    "9to5Mac",
+    "MacRumors"
+  ],
+  "narration": "Apple now accepts Samsung foldables. This is part of a trade-in update. That is a change. According to 9to5Mac, Apple adjusted trade-in values for iPhones and Apple Watches. MacRumors also wrote about the change. MacRumors reports Samsung foldables were added to the trade-in program. The changes touch three areas. One is iPhone trade-in values. Another is Apple Watch trade-in values. The last is Samsung foldable phones. This expands what Apple accepts for trade-in. The reports come from 9to5Mac and MacRumors. Apple is behind the program change. The stories do not give exact numbers. It focuses on trade-in eligibility. The program is run by Apple. Subscribe for more daily tech news.",
+  "scenes": [
+    {
+      "type": "hook",
+      "headline": "Apple Trade-In News",
+      "accent": "News",
+      "voice": "Apple now accepts Samsung foldables. This is part of a trade-in update. That is a change."
+    },
+    {
+      "type": "statement",
+      "headline": "Apple adjusts iPhone and Apple Watch values.",
+      "accent": "values",
+      "voice": "According to 9to5Mac, Apple adjusted trade-in values for iPhones and Apple Watches. MacRumors also wrote about the change."
+    },
+    {
+      "type": "cards",
+      "heading": "What Changed",
+      "items": [
+        "iPhone trade-in values adjusted",
+        "Apple Watch trade-in values adjusted",
+        "Samsung foldables added to program"
+      ],
+      "voice": "MacRumors reports Samsung foldables were added to the trade-in program. The changes touch three areas. One is iPhone trade-in values. Another is Apple Watch trade-in values. The last is Samsung foldable phones. This expands what Apple accepts for trade-in."
+    },
+    {
+      "type": "statement",
+      "headline": "The reports come from 9to5Mac and MacRumors.",
+      "accent": "MacRumors",
+      "voice": "The reports come from 9to5Mac and MacRumors. Apple is behind the program change. The stories do not give exact numbers. It focuses on trade-in eligibility. The program is run by Apple."
+    },
+    {
+      "type": "cta",
+      "headline": "Follow for daily tech news",
+      "voice": "Subscribe for more daily tech news."
+    }
+  ]
+}
