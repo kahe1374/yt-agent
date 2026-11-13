@@ -1,0 +1,62 @@
+{
+  "title": "Apple TV 4K and HomeView: Are They Worth It?",
+  "description": "Apple has officially released the new Apple TV 4K and HomeView, sparking debates over whether the high price is justified. Source: 9to5Mac, CNN This is a short news summary.",
+  "keywords": [
+    "Apple TV 4K",
+    "HomeView",
+    "Apple release",
+    "streaming box",
+    "smart display"
+  ],
+  "tags": [
+    "Apple TV 4K",
+    "HomeView",
+    "Apple",
+    "tech news",
+    "streaming",
+    "smart home",
+    "gadget"
+  ],
+  "narration": "Apple's new TV and HomeView are finally here. The HomeView carries a two hundred ninety-nine dollar price tag. According to 9to5Mac and CNN, the new Apple TV 4K is already being called a favorite streaming box, while the HomeView aims to bring smart home control to your iPhone. Critics are praising the streaming performance of the latest model, but they question if the cost is too high for average buyers. Both devices are now officially available for purchase as Apple looks to strengthen its position in the smart home market. Stay tuned and follow for more updates on the latest tech releases.",
+  "scenes": [
+    {
+      "type": "hook",
+      "headline": "Apple TV 4K and HomeView Arrive",
+      "accent": "Apple",
+      "voice": "Apple's new TV and HomeView are finally here."
+    },
+    {
+      "type": "stat",
+      "value": "$299",
+      "label": "HomeView Price Tag",
+      "voice": "The HomeView carries a two hundred ninety-nine dollar price tag."
+    },
+    {
+      "type": "cards",
+      "heading": "Apple's New Devices",
+      "items": [
+        "New Apple TV 4K launched",
+        "HomeView smart display released",
+        "Streaming box highly praised"
+      ],
+      "voice": "According to 9to5Mac and CNN, the new Apple TV 4K is already being called a favorite streaming box, while the HomeView aims to bring smart home control to your iPhone."
+    },
+    {
+      "type": "statement",
+      "headline": "Is the Apple TV 4K too pricey?",
+      "accent": "pricey",
+      "voice": "Critics are praising the streaming performance of the latest model, but they question if the cost is too high for average buyers."
+    },
+    {
+      "type": "statement",
+      "headline": "Apple's Home Ecosystem Expands",
+      "accent": "Expands",
+      "voice": "Both devices are now officially available for purchase as Apple looks to strengthen its position in the smart home market."
+    },
+    {
+      "type": "cta",
+      "headline": "Follow for daily tech news",
+      "voice": "Stay tuned and follow for more updates on the latest tech releases."
+    }
+  ]
+}
