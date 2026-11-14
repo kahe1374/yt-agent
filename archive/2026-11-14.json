@@ -1,0 +1,63 @@
+{
+  "title": "iPhone Duo Hinge Fails After 451,000 Folds",
+  "description": "Apple's iPhone Duo foldable phone is experiencing hinge failure after extensive testing. Source: CNET and AppleInsider This is a short news summary.",
+  "keywords": [
+    "iPhone Duo",
+    "hinge failure",
+    "foldable phone",
+    "Apple",
+    "tech news"
+  ],
+  "tags": [
+    "Apple",
+    "iPhone Duo",
+    "foldable",
+    "hinge",
+    "CNET",
+    "AppleInsider",
+    "tech news",
+    "smartphone"
+  ],
+  "narration": "Apple's first foldable iPhone has a hinge that is failing after short use. According to CNET, the hinge on the iPhone Duo started to fail after more than 451,000 folds. The hinge wear became apparent after only three weeks of use. This device represents Apple's first attempt at a foldable smartphone. The key facts to remember are that the hinge fails after 451,000 folds, the problem occurs after three weeks, and this is Apple's first foldable device. Please follow for daily technology news updates.",
+  "scenes": [
+    {
+      "type": "hook",
+      "headline": "iPhone Duo Hinge Problem",
+      "accent": "Hinge",
+      "voice": "Apple's first foldable iPhone has a hinge that is failing after short use."
+    },
+    {
+      "type": "stat",
+      "value": "451,000",
+      "label": "Folds before failure",
+      "voice": "According to CNET, the hinge on the iPhone Duo started to fail after more than 451,000 folds."
+    },
+    {
+      "type": "statement",
+      "headline": "The hinge wear became apparent after only three weeks of use.",
+      "accent": "weeks",
+      "voice": "The hinge wear became apparent after only three weeks of use."
+    },
+    {
+      "type": "statement",
+      "headline": "This device represents Apple's first attempt at a foldable smartphone.",
+      "accent": "foldable",
+      "voice": "This device represents Apple's first attempt at a foldable smartphone."
+    },
+    {
+      "type": "cards",
+      "heading": "Key Facts",
+      "items": [
+        "Hinge fails after 451,000 folds",
+        "Failure after three weeks",
+        "Apple's first foldable"
+      ],
+      "voice": "The key facts to remember are that the hinge fails after 451,000 folds, the problem occurs after three weeks, and this is Apple's first foldable device."
+    },
+    {
+      "type": "cta",
+      "headline": "Follow for daily tech news",
+      "voice": "Please follow for daily technology news updates."
+    }
+  ]
+}
