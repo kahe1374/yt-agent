@@ -1,0 +1,63 @@
+{
+  "title": "Early Black Friday MacBook Air Deals: Save $200?",
+  "description": "Early Black Friday sales have started, offering significant discounts on Apple products like the MacBook Air and Apple Watch, as well as Sony headphones. Source: Mashable, MacRumors This is a short news summary of early holiday tech deals.",
+  "keywords": [
+    "Black Friday",
+    "MacBook Air",
+    "Apple deals",
+    "Amazon sales",
+    "Sony headphones"
+  ],
+  "tags": [
+    "Black Friday",
+    "MacBook Air",
+    "Apple",
+    "Amazon",
+    "Sony",
+    "headphones",
+    "tech deals",
+    "tech news"
+  ],
+  "narration": "Early Black Friday deals are already live. According to MacRumors, Apple's early Black Friday sales have officially started with great discounts. Mashable highlights an early deal where you can save two hundred dollars on the MacBook Air. The early Amazon promotions also offer a chance to grab Sony's best headphones at reduced prices. These early holiday savings include discounts on the Apple Watch, a major price cut on the MacBook Air, and reduced prices on Sony's best headphones. Subscribe for more updates on the best tech deals and news.",
+  "scenes": [
+    {
+      "type": "hook",
+      "headline": "Early Black Friday Deals Live",
+      "accent": "Early",
+      "voice": "Early Black Friday deals are already live."
+    },
+    {
+      "type": "statement",
+      "headline": "Apple's early Black Friday sales start now",
+      "accent": null,
+      "voice": "According to MacRumors, Apple's early Black Friday sales have officially started with great discounts."
+    },
+    {
+      "type": "stat",
+      "value": "$200",
+      "label": "Savings on the new MacBook Air",
+      "voice": "Mashable highlights an early deal where you can save two hundred dollars on the MacBook Air."
+    },
+    {
+      "type": "statement",
+      "headline": "Sony headphones are also on sale early",
+      "accent": "Sony",
+      "voice": "The early Amazon promotions also offer a chance to grab Sony's best headphones at reduced prices."
+    },
+    {
+      "type": "cards",
+      "heading": "Top early Black Friday deals",
+      "items": [
+        "Save on the Apple Watch",
+        "Get $200 off the MacBook Air",
+        "Discounted Sony headphones"
+      ],
+      "voice": "These early holiday savings include discounts on the Apple Watch, a major price cut on the MacBook Air, and reduced prices on Sony's best headphones."
+    },
+    {
+      "type": "cta",
+      "headline": "Follow for daily tech news",
+      "voice": "Subscribe for more updates on the best tech deals and news."
+    }
+  ]
+}
