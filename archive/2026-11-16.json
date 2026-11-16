@@ -1,0 +1,75 @@
+{
+  "title": "Samsung Galaxy Studio Headphones: Leaked Design?",
+  "description": "Samsung's upcoming Galaxy Studio headphones may have leaked as a rival to Apple's AirPods Max. Source: SamMobile This is a short news summary.",
+  "keywords": [
+    "Samsung",
+    "Galaxy Studio",
+    "headphones",
+    "AirPods Max",
+    "leak"
+  ],
+  "tags": [
+    "Samsung",
+    "Galaxy Studio headphones",
+    "AirPods Max rival",
+    "headphone leak",
+    "tech news",
+    "SamMobile",
+    "Notebookcheck",
+    "Samsung headphones"
+  ],
+  "narration": "Samsung may have just leaked its next big headphones. These headphones are positioned as a direct rival to Apple's AirPods Max. Reports say the design may have leaked, and Samsung is preparing an AirPods Max rival called the Galaxy Studio headphones. SamMobile has published a closer look at the upcoming Galaxy Studio headphones, according to the report. Notebookcheck reports the Galaxy Studio headphones design may have leaked as Samsung prepares its rival. Samsung is preparing its AirPods Max rival according to the report from Notebookcheck. The headphones are described as upcoming by SamMobile in its coverage. Subscribe for more daily tech news.",
+  "scenes": [
+    {
+      "type": "hook",
+      "headline": "Samsung Leaks New Headphones",
+      "accent": "Leaks",
+      "voice": "Samsung may have just leaked its next big headphones."
+    },
+    {
+      "type": "statement",
+      "headline": "They Rival Apple's AirPods Max.",
+      "accent": "Rival",
+      "voice": "These headphones are positioned as a direct rival to Apple's AirPods Max."
+    },
+    {
+      "type": "cards",
+      "heading": "What We Know",
+      "items": [
+        "Design may have leaked",
+        "Samsung prepares AirPods Max rival",
+        "Upcoming Galaxy Studio headphones"
+      ],
+      "voice": "Reports say the design may have leaked, and Samsung is preparing an AirPods Max rival called the Galaxy Studio headphones."
+    },
+    {
+      "type": "statement",
+      "headline": "SamMobile Has a Closer Look.",
+      "accent": "Closer",
+      "voice": "SamMobile has published a closer look at the upcoming Galaxy Studio headphones, according to the report."
+    },
+    {
+      "type": "statement",
+      "headline": "Notebookcheck Reports the Design Leaked.",
+      "accent": "Leaked",
+      "voice": "Notebookcheck reports the Galaxy Studio headphones design may have leaked as Samsung prepares its rival."
+    },
+    {
+      "type": "statement",
+      "headline": "Samsung Prepares an AirPods Max Rival.",
+      "accent": "Prepares",
+      "voice": "Samsung is preparing its AirPods Max rival according to the report from Notebookcheck."
+    },
+    {
+      "type": "statement",
+      "headline": "The Headphones Are Described as Upcoming.",
+      "accent": "Upcoming",
+      "voice": "The headphones are described as upcoming by SamMobile in its coverage."
+    },
+    {
+      "type": "cta",
+      "headline": "Follow for daily tech news",
+      "voice": "Subscribe for more daily tech news."
+    }
+  ]
+}
