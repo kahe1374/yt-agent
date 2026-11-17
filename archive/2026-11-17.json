@@ -1,0 +1,62 @@
+{
+  "title": "WhatsApp Free Cloud Backup on Android",
+  "description": "WhatsApp is rolling out a free, built-in cloud backup feature for Android users with encrypted storage. Source: 9to5Google This is a short news summary.",
+  "keywords": [
+    "WhatsApp",
+    "cloud backup",
+    "Android",
+    "free backup",
+    "encrypted storage"
+  ],
+  "tags": [
+    "WhatsApp",
+    "Android",
+    "cloud backup",
+    "free storage",
+    "encrypted backup",
+    "tech news",
+    "mobile update"
+  ],
+  "narration": "WhatsApp adds free cloud backup for chats. According to 9to5Google, WhatsApp is rolling out a built-in cloud backup feature on Android. The service is free and offers encrypted storage for your chats. An encrypted cloud storage backup option is now available to some beta users on Android. This built-in backup feature is rolling out to Android users at no cost. The update brings a native way to secure your chat history directly through the app. Subscribe for more quick tech updates.",
+  "scenes": [
+    {
+      "type": "hook",
+      "headline": "WhatsApp Free Cloud Backup",
+      "accent": "WhatsApp",
+      "voice": "WhatsApp adds free cloud backup for chats."
+    },
+    {
+      "type": "cards",
+      "heading": "WhatsApp Backup Update Details",
+      "items": [
+        "Built-in cloud backup is rolling out on Android",
+        "The backup service is completely free for users",
+        "Encrypted cloud storage is available to beta users"
+      ],
+      "voice": "According to 9to5Google, WhatsApp is rolling out a built-in cloud backup feature on Android. The service is free and offers encrypted storage for your chats."
+    },
+    {
+      "type": "statement",
+      "headline": "Encrypted Cloud Storage Available Now",
+      "accent": "Encrypted",
+      "voice": "An encrypted cloud storage backup option is now available to some beta users on Android."
+    },
+    {
+      "type": "statement",
+      "headline": "Free Android Backup Feature Launching",
+      "accent": "Free",
+      "voice": "This built-in backup feature is rolling out to Android users at no cost."
+    },
+    {
+      "type": "statement",
+      "headline": "WhatsApp Native Chat Backup Live",
+      "accent": "WhatsApp",
+      "voice": "The update brings a native way to secure your chat history directly through the app."
+    },
+    {
+      "type": "cta",
+      "headline": "Follow for daily tech news",
+      "voice": "Subscribe for more quick tech updates."
+    }
+  ]
+}
