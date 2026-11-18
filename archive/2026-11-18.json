@@ -1,0 +1,63 @@
+{
+  "title": "Nvidia RTX Spark Mini PCs Launch Today",
+  "description": "Nvidia RTX Spark mini PCs are launching today from Asus, Dell, and MSI. Source: The Verge this is a short news summary.",
+  "keywords": [
+    "Nvidia",
+    "RTX Spark",
+    "mini PCs",
+    "Asus",
+    "MSI"
+  ],
+  "tags": [
+    "Nvidia",
+    "RTX Spark",
+    "mini PC",
+    "Asus",
+    "Dell",
+    "MSI",
+    "tech news",
+    "computers"
+  ],
+  "narration": "New Nvidia mini PCs launch today. Three brands are behind them. This is the first Spark release. Asus, Dell, and MSI are all releasing them. Asus calls its model the ProArt GR1X. The Verge reports that the desktops are out now. Nvidia calls them RTX Spark Compact Desktops. The NVIDIA Blog also announces the desktops. These are compact desktops from Nvidia. They are part of the RTX Spark family. Asus has announced availability of the ProArt GR1X. Dell and MSI are also launching units today. All three brands are also involved in this release. Subscribe for more daily tech news.",
+  "scenes": [
+    {
+      "type": "hook",
+      "headline": "Nvidia Mini PCs Launch",
+      "accent": "Nvidia",
+      "voice": "New Nvidia mini PCs launch today. Three brands are behind them. This is the first Spark release."
+    },
+    {
+      "type": "cards",
+      "heading": "Launching Brands",
+      "items": [
+        "Asus is releasing a unit",
+        "Dell is releasing a unit",
+        "MSI is releasing a unit"
+      ],
+      "voice": "Asus, Dell, and MSI are all releasing them. Asus calls its model the ProArt GR1X."
+    },
+    {
+      "type": "statement",
+      "headline": "The Verge reports the news.",
+      "accent": "Verge",
+      "voice": "The Verge reports that the desktops are out now. Nvidia calls them RTX Spark Compact Desktops. The NVIDIA Blog also announces the desktops."
+    },
+    {
+      "type": "statement",
+      "headline": "Nvidia calls them compact desktops.",
+      "accent": "compact",
+      "voice": "These are compact desktops from Nvidia. They are part of the RTX Spark family."
+    },
+    {
+      "type": "statement",
+      "headline": "Asus announces ProArt GR1X availability.",
+      "accent": "ProArt",
+      "voice": "Asus has announced availability of the ProArt GR1X. Dell and MSI are also launching units today. All three brands are also involved in this release."
+    },
+    {
+      "type": "cta",
+      "headline": "Follow for daily tech news",
+      "voice": "Subscribe for more daily tech news."
+    }
+  ]
+}
