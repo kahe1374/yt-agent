@@ -1,0 +1,50 @@
+{
+  "title": "Black Friday prices are officially live on Apple Watches, AirTags, MacBooks and more",
+  "description": "Today's tech headlines. Source: CNN.",
+  "keywords": [
+    "officially"
+  ],
+  "tags": [
+    "tech news",
+    "technology",
+    "shorts"
+  ],
+  "narration": "Here is a tech story you should know about today. Black Friday prices are officially live on Apple Watches, AirTags, MacBooks and more. Black Friday prices are officially live on Apple Watches, AirTags, MacBooks and more &nbsp;&nbsp; CNN Amazon is selling Apple AirPods Pro 3 earbuds for a near-all-time low of $179 (plus 10 more fab deals) &nbsp;&nbsp; Ya. Also in the news today. 'GTA 6' release live updates: Reviews, memes and more as gamers explore and react to Vice City after 13 long years. Also in the news today. First Google Pixel, now Galaxy phones are getting a massive iPhone-inspired upgrade. Also in the news today. Google gives Gemini the ability to use your Mac for you. Follow Trend Pulse Daily for tech news every day.",
+  "scenes": [
+    {
+      "type": "hook",
+      "headline": "Black Friday prices are officially live",
+      "accent": "officially",
+      "voice": "Here is a tech story you should know about today. Black Friday prices are officially live on Apple Watches, AirTags, MacBooks and more."
+    },
+    {
+      "type": "statement",
+      "headline": "Black Friday prices are officially live on Apple Watches",
+      "accent": "officially",
+      "voice": "Black Friday prices are officially live on Apple Watches, AirTags, MacBooks and more &nbsp;&nbsp; CNN Amazon is selling Apple AirPods Pro 3 earbuds for a near-all-time low of $179 (plus 10 more fab deals) &nbsp;&nbsp; Ya."
+    },
+    {
+      "type": "statement",
+      "headline": "'GTA 6' release live updates: Reviews, memes and more",
+      "accent": "updates",
+      "voice": "Also in the news today. 'GTA 6' release live updates: Reviews, memes and more as gamers explore and react to Vice City after 13 long years."
+    },
+    {
+      "type": "statement",
+      "headline": "First Google Pixel, now Galaxy phones are getting a",
+      "accent": "getting",
+      "voice": "Also in the news today. First Google Pixel, now Galaxy phones are getting a massive iPhone-inspired upgrade."
+    },
+    {
+      "type": "statement",
+      "headline": "Google gives Gemini the ability to use your Mac",
+      "accent": "ability",
+      "voice": "Also in the news today. Google gives Gemini the ability to use your Mac for you."
+    },
+    {
+      "type": "cta",
+      "headline": "Follow for daily tech news",
+      "voice": "Follow Trend Pulse Daily for tech news every day."
+    }
+  ]
+}
