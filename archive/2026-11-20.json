@@ -1,0 +1,50 @@
+{
+  "title": "Best Apple Black Friday deals now live: AirPods, MacBook Neo, Series 12, M6 MacBook Pro, m",
+  "description": "Today's tech headlines. Source: 9to5Mac.",
+  "keywords": [
+    "Friday"
+  ],
+  "tags": [
+    "tech news",
+    "technology",
+    "shorts"
+  ],
+  "narration": "Here is a tech story you should know about today. Best Apple Black Friday deals now live: AirPods, MacBook Neo, Series 12, M6 MacBook Pro, more [Updated]. Best Apple Black Friday deals now live: AirPods, MacBook Neo, Series 12, M6 MacBook Pro, more [Updated] &nbsp;&nbsp; 9to5Mac I've tested all of Apple's AirPods. These are the 10 best early Black Friday deals &nbsp;&nbsp;. Also in the news today. 'GTA 6' Hits Massive $3.79 Billion in First-Day Sales. Also in the news today. iOS 27.3: New features, release date, more. Also in the news today. Official response to Microsoft To Do criticism boils down to an export button. Follow Trend Pulse Daily for tech news every day.",
+  "scenes": [
+    {
+      "type": "hook",
+      "headline": "Best Apple Black Friday deals now live:",
+      "accent": "Friday",
+      "voice": "Here is a tech story you should know about today. Best Apple Black Friday deals now live: AirPods, MacBook Neo, Series 12, M6 MacBook Pro, more [Updated]."
+    },
+    {
+      "type": "statement",
+      "headline": "Best Apple Black Friday deals now live: AirPods, MacBook",
+      "accent": "AirPods",
+      "voice": "Best Apple Black Friday deals now live: AirPods, MacBook Neo, Series 12, M6 MacBook Pro, more [Updated] &nbsp;&nbsp; 9to5Mac I've tested all of Apple's AirPods. These are the 10 best early Black Friday deals &nbsp;&nbsp;."
+    },
+    {
+      "type": "statement",
+      "headline": "'GTA 6' Hits Massive $3.79 Billion in First-Day Sales",
+      "accent": "FirstDay",
+      "voice": "Also in the news today. 'GTA 6' Hits Massive $3.79 Billion in First-Day Sales."
+    },
+    {
+      "type": "statement",
+      "headline": "iOS 27.3: New features, release date, more",
+      "accent": "features",
+      "voice": "Also in the news today. iOS 27.3: New features, release date, more."
+    },
+    {
+      "type": "statement",
+      "headline": "Official response to Microsoft To Do criticism boils down",
+      "accent": "Microsoft",
+      "voice": "Also in the news today. Official response to Microsoft To Do criticism boils down to an export button."
+    },
+    {
+      "type": "cta",
+      "headline": "Follow for daily tech news",
+      "voice": "Follow Trend Pulse Daily for tech news every day."
+    }
+  ]
+}
