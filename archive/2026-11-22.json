@@ -1,0 +1,62 @@
+{
+  "title": "Samsung Galaxy S27: Is It Copying the iPhone Dynamic Island?",
+  "description": "9to5Google says Samsung may soon copy the iPhone's Dynamic Island, and that it actually looks good. Source: 9to5Google This is a short news summary.",
+  "keywords": [
+    "Samsung",
+    "Galaxy S27",
+    "Dynamic Island",
+    "iPhone",
+    "9to5Google"
+  ],
+  "tags": [
+    "Samsung",
+    "Galaxy S27",
+    "Dynamic Island",
+    "iPhone",
+    "Samsung news",
+    "tech news",
+    "smartphone design"
+  ],
+  "narration": "Samsung may soon copy the iPhone's Dynamic Island. That is what 9to5Google is reporting. 9to5Google says the Samsung version actually looks good. The outlet showed it off in a video. And Forbes reports that early software reveals an iPhone-style overhaul. The phone in question is the Galaxy S27. Forbes is already covering its release date and that early software. For now, this is just a rumor. 9to5Google is only saying Samsung might do it soon, not that it will. Apple already has this on the iPhone. The big question is whether Samsung actually follows through with it. Subscribe for more daily tech news.",
+  "scenes": [
+    {
+      "type": "hook",
+      "headline": "Samsung May Copy Dynamic Island",
+      "accent": "Copy",
+      "voice": "Samsung may soon copy the iPhone's Dynamic Island. That is what 9to5Google is reporting."
+    },
+    {
+      "type": "cards",
+      "heading": "What The Reports Say",
+      "items": [
+        "9to5Google says Samsung's version actually looks good",
+        "9to5Google showed the design in a video",
+        "Forbes: early software reveals iPhone-style overhaul"
+      ],
+      "voice": "9to5Google says the Samsung version actually looks good. The outlet showed it off in a video. And Forbes reports that early software reveals an iPhone-style overhaul."
+    },
+    {
+      "type": "statement",
+      "headline": "The phone in question is the Galaxy S27.",
+      "accent": "S27",
+      "voice": "The phone in question is the Galaxy S27. Forbes is already covering its release date and that early software."
+    },
+    {
+      "type": "statement",
+      "headline": "For now this is just a rumor.",
+      "accent": "rumor",
+      "voice": "For now, this is just a rumor. 9to5Google is only saying Samsung might do it soon, not that it will."
+    },
+    {
+      "type": "statement",
+      "headline": "Apple already has this on the iPhone.",
+      "accent": "iPhone",
+      "voice": "Apple already has this on the iPhone. The big question is whether Samsung actually follows through with it."
+    },
+    {
+      "type": "cta",
+      "headline": "Follow for daily tech news",
+      "voice": "Subscribe for more daily tech news."
+    }
+  ]
+}
