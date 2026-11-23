@@ -1,0 +1,63 @@
+{
+  "title": "iPhone 18 Pro or Duo: What's Coming in 2027?",
+  "description": "9to5Mac looks ahead to what Apple has planned for 2027 after the iPhone 18 Pro and Duo. Source: 9to5Mac This is a short news summary.",
+  "keywords": [
+    "iPhone 18",
+    "Apple 2027",
+    "9to5Mac",
+    "iPhone 18 Pro",
+    "iPhone 18 Duo"
+  ],
+  "tags": [
+    "iPhone 18 Pro",
+    "iPhone 18 Duo",
+    "Apple 2027",
+    "9to5Mac",
+    "Apple rumors",
+    "iPhone 18e",
+    "tech news",
+    "Apple products"
+  ],
+  "narration": "Not upgrading to the iPhone 18 Pro or Duo? Here's what 9to5Mac says is coming next for Apple. According to 9to5Mac, attention is already moving to what Apple has planned for 2027. The report looks past the iPhone 18 Pro and Duo. That's the year the report points to for what's coming next. MacRumors reports Apple plans to release some products in February or March, according to the report. The report mentions the iPhone 18 Pro and the iPhone 18 Duo. It also lists the iPhone 18 and the iPhone 18e. And MacRumors says some products could arrive in February or March. Follow for daily tech news, and we'll keep you posted.",
+  "scenes": [
+    {
+      "type": "hook",
+      "headline": "Not upgrading iPhone 18 Pro?",
+      "accent": "Not",
+      "voice": "Not upgrading to the iPhone 18 Pro or Duo? Here's what 9to5Mac says is coming next for Apple."
+    },
+    {
+      "type": "statement",
+      "headline": "Apple fans are already looking at 2027",
+      "accent": "2027",
+      "voice": "According to 9to5Mac, attention is already moving to what Apple has planned for 2027. The report looks past the iPhone 18 Pro and Duo."
+    },
+    {
+      "type": "stat",
+      "value": "2027",
+      "label": "The year 9to5Mac is looking ahead to",
+      "voice": "That's the year the report points to for what's coming next."
+    },
+    {
+      "type": "statement",
+      "headline": "MacRumors points to a February or March window",
+      "accent": "February",
+      "voice": "MacRumors reports Apple plans to release some products in February or March, according to the report."
+    },
+    {
+      "type": "cards",
+      "heading": "What's reportedly coming next",
+      "items": [
+        "iPhone 18 Pro and iPhone 18 Duo",
+        "iPhone 18 and iPhone 18e also mentioned",
+        "Some products reportedly due in February or March"
+      ],
+      "voice": "The report mentions the iPhone 18 Pro and the iPhone 18 Duo. It also lists the iPhone 18 and the iPhone 18e. And MacRumors says some products could arrive in February or March."
+    },
+    {
+      "type": "cta",
+      "headline": "Follow for daily tech news",
+      "voice": "Follow for daily tech news, and we'll keep you posted."
+    }
+  ]
+}
