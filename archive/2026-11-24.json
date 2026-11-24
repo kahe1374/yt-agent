@@ -1,0 +1,50 @@
+{
+  "title": "Google alternative Kagi launches an email service",
+  "description": "Today's tech headlines. Source: The Verge.",
+  "keywords": [
+    "alternative"
+  ],
+  "tags": [
+    "tech news",
+    "technology",
+    "shorts"
+  ],
+  "narration": "Here is a tech story you should know about today. Google alternative Kagi launches an email service. Google alternative Kagi launches an email service &nbsp;&nbsp; The Verge Kagi Mail Opens to Public Beta at $99 a Year &nbsp;&nbsp; Techaeris Kagi launches Kagi Mail, a $99-a-year email and calendar service, in public bet. Also in the news today. AI Mode adding Google Drive, Wallet, & Gemini app integration. Also in the news today. Samsung Launches the Odyssey G6: The World's First 1,100Hz Gaming Monitor. Also in the news today. 'Grand Theft Auto VI' lives up to its hype with compelling characters and spectacular action. Follow Trend Pulse Daily for tech news every day.",
+  "scenes": [
+    {
+      "type": "hook",
+      "headline": "Google alternative Kagi launches an email",
+      "accent": "alternative",
+      "voice": "Here is a tech story you should know about today. Google alternative Kagi launches an email service."
+    },
+    {
+      "type": "statement",
+      "headline": "Google alternative Kagi launches an email service &nbsp;&nbsp; The",
+      "accent": "nbspnbsp",
+      "voice": "Google alternative Kagi launches an email service &nbsp;&nbsp; The Verge Kagi Mail Opens to Public Beta at $99 a Year &nbsp;&nbsp; Techaeris Kagi launches Kagi Mail, a $99-a-year email and calendar service, in public bet."
+    },
+    {
+      "type": "statement",
+      "headline": "AI Mode adding Google Drive, Wallet, & Gemini app",
+      "accent": "Wallet",
+      "voice": "Also in the news today. AI Mode adding Google Drive, Wallet, & Gemini app integration."
+    },
+    {
+      "type": "statement",
+      "headline": "Samsung Launches the Odyssey G6: The World's First 1,100Hz",
+      "accent": "Launches",
+      "voice": "Also in the news today. Samsung Launches the Odyssey G6: The World's First 1,100Hz Gaming Monitor."
+    },
+    {
+      "type": "statement",
+      "headline": "'Grand Theft Auto VI' lives up to its hype",
+      "accent": "Grand",
+      "voice": "Also in the news today. 'Grand Theft Auto VI' lives up to its hype with compelling characters and spectacular action."
+    },
+    {
+      "type": "cta",
+      "headline": "Follow for daily tech news",
+      "voice": "Follow Trend Pulse Daily for tech news every day."
+    }
+  ]
+}
