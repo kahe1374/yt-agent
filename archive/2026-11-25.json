@@ -1,0 +1,61 @@
+{
+  "title": "Asus ProArt P16: A Glimpse of a Local AI Future",
+  "description": "Ars Technica reviews the Asus ProArt P16 and frames it as a glimpse of a future powered by local AI. Source: Ars Technica This is a short news summary.",
+  "keywords": [
+    "Asus ProArt P16",
+    "local AI",
+    "laptop review",
+    "Ars Technica"
+  ],
+  "tags": [
+    "Asus ProArt P16",
+    "local AI",
+    "laptop review",
+    "Ars Technica",
+    "tech news",
+    "AI laptop",
+    "Asus"
+  ],
+  "narration": "Ars Technica reviewed a laptop built around local AI. The laptop is the Asus ProArt P16, and the review comes from Ars Technica. It is a fresh look at the machine. According to Ars Technica, the ProArt P16 offers a glimpse of a future powered by local AI. That is the key idea in the headline. Here is what the text tells us. The laptop is the Asus ProArt P16. The review is from Ars Technica. And local AI is the big theme. The headline points to a future powered by local AI, and Ars Technica is the source for that claim. Follow for more daily tech news.",
+  "scenes": [
+    {
+      "type": "hook",
+      "headline": "A Laptop Built Around Local AI",
+      "accent": "Local",
+      "voice": "Ars Technica reviewed a laptop built around local AI."
+    },
+    {
+      "type": "statement",
+      "headline": "The Asus ProArt P16 gets a fresh review.",
+      "accent": "ProArt",
+      "voice": "The laptop is the Asus ProArt P16, and the review comes from Ars Technica. It is a fresh look at the machine."
+    },
+    {
+      "type": "statement",
+      "headline": "Ars Technica calls it a glimpse of a future.",
+      "accent": "glimpse",
+      "voice": "According to Ars Technica, the ProArt P16 offers a glimpse of a future powered by local AI. That is the key idea in the headline."
+    },
+    {
+      "type": "cards",
+      "heading": "What The Text Says",
+      "items": [
+        "Asus ProArt P16 is the laptop",
+        "Ars Technica published the review",
+        "Local AI is the big theme"
+      ],
+      "voice": "Here is what the text tells us. The laptop is the Asus ProArt P16. The review is from Ars Technica. And local AI is the big theme."
+    },
+    {
+      "type": "statement",
+      "headline": "The Future Here Is Powered By Local AI",
+      "accent": "Local",
+      "voice": "The headline points to a future powered by local AI, and Ars Technica is the source for that claim."
+    },
+    {
+      "type": "cta",
+      "headline": "Follow for daily tech news",
+      "voice": "Follow for more daily tech news."
+    }
+  ]
+}
