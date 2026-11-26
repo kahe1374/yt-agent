@@ -1,0 +1,73 @@
+{
+  "title": "Samsung may repeat TriFold mistake soon",
+  "description": "Samsung may repeat its biggest TriFold mistake, with a new TriFold possibly appearing in the Galaxy Z Fold 9 lineup. Source: PhoneArena This is a short news summary.",
+  "keywords": [
+    "Samsung",
+    "TriFold",
+    "Fold 9",
+    "leak"
+  ],
+  "tags": [
+    "Samsung",
+    "TriFold",
+    "Fold 9",
+    "leak",
+    "mobile",
+    "news",
+    "technology"
+  ],
+  "narration": "Samsung may repeat its biggest TriFold mistake. Samsung may repeat its biggest TriFold mistake. New TriFold could appear in Galaxy Z Fold 9. Leak suggests upcoming TriFold design. Samsung may repeat its biggest TriFold mistake. New TriFold could appear in Galaxy Z Fold 9. Leak suggests upcoming TriFold design. Samsung's Fold 9 may include new TriFold. Samsung may repeat its biggest TriFold mistake. Leak suggests new TriFold could appear in Fold 9. Samsung's Fold 9 may include new TriFold. Samsung may repeat its biggest TriFold mistake. Leak suggests new TriFold could appear. Subscribe now for daily tech news and stay updated.",
+  "scenes": [
+    {
+      "type": "hook",
+      "headline": "Samsung may repeat TriFold mistake",
+      "accent": "TriFold",
+      "voice": "Samsung may repeat its biggest TriFold mistake."
+    },
+    {
+      "type": "cards",
+      "heading": "Samsung TriFold Update",
+      "items": [
+        "Samsung may repeat its biggest TriFold mistake",
+        "New TriFold could appear in Galaxy Z Fold 9",
+        "Leak suggests upcoming TriFold design"
+      ],
+      "voice": "Samsung may repeat its biggest TriFold mistake. New TriFold could appear in Galaxy Z Fold 9. Leak suggests upcoming TriFold design. Samsung may repeat its biggest TriFold mistake. New TriFold could appear in Galaxy Z Fold 9. Leak suggests upcoming TriFold design. Samsung's Fold 9 may include new TriFold."
+    },
+    {
+      "type": "statement",
+      "headline": "Samsung may repeat its biggest TriFold mistake.",
+      "accent": "TriFold",
+      "voice": "Samsung may repeat its biggest TriFold mistake."
+    },
+    {
+      "type": "statement",
+      "headline": "Leak suggests new TriFold could appear in Fold 9.",
+      "accent": "TriFold",
+      "voice": "Leak suggests new TriFold could appear in Fold 9."
+    },
+    {
+      "type": "statement",
+      "headline": "Samsung's Fold 9 may include new TriFold.",
+      "accent": "TriFold",
+      "voice": "Samsung's Fold 9 may include new TriFold."
+    },
+    {
+      "type": "statement",
+      "headline": "Samsung may repeat its biggest TriFold mistake.",
+      "accent": "TriFold",
+      "voice": "Samsung may repeat its biggest TriFold mistake."
+    },
+    {
+      "type": "statement",
+      "headline": "Leak suggests new TriFold could appear.",
+      "accent": "TriFold",
+      "voice": "Leak suggests new TriFold could appear."
+    },
+    {
+      "type": "cta",
+      "headline": "Follow for daily tech news",
+      "voice": "Subscribe now for daily tech news and stay updated."
+    }
+  ]
+}
