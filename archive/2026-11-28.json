@@ -1,0 +1,63 @@
+{
+  "title": "Apple Best Black Friday Deals Still Available",
+  "description": "Apple Black Friday deals on AirPods and iPads are still available. Source: MacRumors This is a short news summary.",
+  "keywords": [
+    "apple",
+    "black",
+    "friday",
+    "airpods",
+    "deals"
+  ],
+  "tags": [
+    "apple",
+    "black",
+    "friday",
+    "airpods",
+    "deals",
+    "ipads",
+    "macrumors",
+    "news"
+  ],
+  "narration": "Are Apple Best Black Friday deals still available? According to MacRumors. I use AirPods every day. I recommend the 19 Black Friday AirPods deals according to MacRumors still for daily use. AirPods deals recommended according to MacRumors still for daily use. iPads Black Friday sale and still available according to MacRumors. Black Friday deals listed according to MacRumors and still available. All according to MacRumors for daily use. 19 AirPods deals are available according to MacRumors still for daily use. Apple deals still available on AirPods and iPads according to MacRumors for daily use. Follow for daily tech news updates.",
+  "scenes": [
+    {
+      "type": "hook",
+      "headline": "Apple Best Black Friday Deals",
+      "accent": "Apple",
+      "voice": "Are Apple Best Black Friday deals still available? According to MacRumors."
+    },
+    {
+      "type": "statement",
+      "headline": "I use AirPods every day",
+      "accent": "AirPods",
+      "voice": "I use AirPods every day. I recommend the 19 Black Friday AirPods deals according to MacRumors still for daily use."
+    },
+    {
+      "type": "cards",
+      "heading": "Black Friday Deals",
+      "items": [
+        "AirPods deals recommended",
+        "iPads Black Friday sale",
+        "Black Friday deals listed"
+      ],
+      "voice": "AirPods deals recommended according to MacRumors still for daily use. iPads Black Friday sale and still available according to MacRumors. Black Friday deals listed according to MacRumors and still available. All according to MacRumors for daily use."
+    },
+    {
+      "type": "stat",
+      "value": "19",
+      "label": "19 AirPods deals available",
+      "voice": "19 AirPods deals are available according to MacRumors still for daily use."
+    },
+    {
+      "type": "statement",
+      "headline": "Apple deals still available",
+      "accent": "Apple",
+      "voice": "Apple deals still available on AirPods and iPads according to MacRumors for daily use."
+    },
+    {
+      "type": "cta",
+      "headline": "Follow for daily tech news",
+      "voice": "Follow for daily tech news updates."
+    }
+  ]
+}
